@@ -3,13 +3,12 @@ import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
 import { AccountSelector } from '@/features/accounts/AccountSelector';
-import { useToast } from '@/components/ui';
+import { ExportPanel } from '@/features/export/ExportPanel';
 
 export function AppLayout() {
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const toast = useToast();
-  // Replaced by the real ExportPanel in the export task.
-  const onExport = () => toast('CSV-Export folgt in Kürze.', 'info');
+  const [exportOpen, setExportOpen] = useState(false);
+  const onExport = () => setExportOpen(true);
 
   return (
     <div className="flex h-screen overflow-hidden">
@@ -40,6 +39,8 @@ export function AppLayout() {
           </div>
         </main>
       </div>
+
+      <ExportPanel open={exportOpen} onClose={() => setExportOpen(false)} />
     </div>
   );
 }

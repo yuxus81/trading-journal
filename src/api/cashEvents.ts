@@ -11,6 +11,16 @@ export async function listCashEvents(accountId: string): Promise<CashEvent[]> {
   return data as CashEvent[];
 }
 
+/** All cash events across every account (RLS-scoped to the user). Used by CSV backup. */
+export async function listAllCashEvents(): Promise<CashEvent[]> {
+  const { data, error } = await supabase
+    .from('cash_events')
+    .select('*')
+    .order('event_date', { ascending: true });
+  if (error) throw error;
+  return data as CashEvent[];
+}
+
 export async function createCashEvent(e: NewCashEvent): Promise<CashEvent> {
   const { data, error } = await supabase.from('cash_events').insert(e).select().single();
   if (error) throw error;

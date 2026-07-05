@@ -13,6 +13,16 @@ export async function listTrades(accountId: string): Promise<Trade[]> {
   return data as Trade[];
 }
 
+/** All trades across every account (RLS-scoped to the user). Used by CSV backup. */
+export async function listAllTrades(): Promise<Trade[]> {
+  const { data, error } = await supabase
+    .from('trades')
+    .select('*')
+    .order('trade_date', { ascending: true });
+  if (error) throw error;
+  return data as Trade[];
+}
+
 export async function getTrade(id: string): Promise<Trade> {
   const { data, error } = await supabase.from('trades').select('*').eq('id', id).single();
   if (error) throw error;
