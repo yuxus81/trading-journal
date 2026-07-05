@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Outlet } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { Topbar } from './Topbar';
+import { AccountSelector } from '@/features/accounts/AccountSelector';
 import { useToast } from '@/components/ui';
 
 export function AppLayout() {
@@ -32,7 +33,7 @@ export function AppLayout() {
       )}
 
       <div className="flex flex-1 flex-col overflow-hidden">
-        <Topbar onMenu={() => setDrawerOpen(true)} />
+        <Topbar onMenu={() => setDrawerOpen(true)} accountSlot={<AccountSelector />} />
         <main className="flex-1 overflow-y-auto">
           <div className="mx-auto max-w-6xl animate-page-fade px-4 py-6 sm:px-6">
             <Outlet />
