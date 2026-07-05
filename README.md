@@ -29,14 +29,19 @@ Zustand · Recharts · date-fns · browser-image-compression · Supabase (Postgr
 
 ## Deploy (GitHub Pages)
 
-- Repo zu GitHub pushen. Der Workflow `.github/workflows/deploy.yml` baut und deployed bei
-  jedem Push auf `main`.
-- `VITE_BASE` steuert den Basis-Pfad (Standard `/trading-journal/`). Für eine eigene Domain
-  auf `/` setzen.
-- Der `postbuild`-Schritt kopiert `index.html` → `404.html`, damit Deep-Links auf Pages
-  funktionieren.
-- **Optional:** `.github/workflows/keep-alive.yml` aktivieren, um die 7-Tage-Pause des
-  Supabase-Free-Tiers zu verhindern (leichter geplanter SELECT).
+1. Repo zu GitHub pushen (Name idealerweise `trading-journal`, damit der Basis-Pfad passt).
+2. Unter **Settings → Secrets and variables → Actions** zwei Repo-Secrets anlegen:
+   - `VITE_SUPABASE_URL`
+   - `VITE_SUPABASE_ANON_KEY`
+   (Der Deploy-Workflow schreibt daraus beim Bauen die `.env` — der Key ist öffentlich/RLS-geschützt.)
+3. Unter **Settings → Pages** als Source **„GitHub Actions"** wählen.
+4. Push auf `main` (oder Workflow manuell starten) → `.github/workflows/deploy.yml` baut und deployed.
+
+- `VITE_BASE` steuert den Basis-Pfad (Standard `/trading-journal/`). Heißt das Repo anders,
+  passe das im Workflow an. Für eine eigene Domain `/` verwenden.
+- Der `postbuild`-Schritt kopiert `index.html` → `404.html`, damit Deep-Links auf Pages funktionieren.
+- **Optional:** `.github/workflows/keep-alive.yml` verhindert die 7-Tage-Pause des Supabase-Free-Tiers
+  (leichter geplanter Request alle ~5 Tage). Nutzt dieselben Secrets; einfach löschen, wenn nicht gewünscht.
 
 ## Backup
 
