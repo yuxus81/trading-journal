@@ -1,5 +1,6 @@
 import { NavLink } from 'react-router-dom';
 import type { ComponentType, SVGProps } from 'react';
+import logo from '@/assets/logo.png';
 import { DashboardIcon, TradesIcon, CalendarIcon, AccountsIcon, ExportIcon } from './navIcons';
 
 interface NavItem {
@@ -24,8 +25,8 @@ export function Sidebar({ onExport, onNavigate }: SidebarProps) {
   return (
     <div className="flex h-full w-56 flex-col border-r border-border bg-card">
       <div className="flex h-16 items-center gap-2 px-5">
-        <span className="h-2.5 w-2.5 rounded-full bg-accent" />
-        <span className="text-sm font-medium text-text">Trading Journal</span>
+        <img src={logo} alt="YP Trades" className="h-7 w-7 rounded-md" />
+        <span className="text-sm font-medium text-text">YP Trades</span>
       </div>
       <nav className="flex flex-1 flex-col gap-1 px-3 py-2">
         {items.map(({ to, label, Icon }) => (

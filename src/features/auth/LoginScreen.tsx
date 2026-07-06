@@ -1,6 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from './useAuth';
+import logo from '@/assets/logo.png';
 import { Button, Card, Input, useToast } from '@/components/ui';
 
 export function LoginScreen() {
@@ -32,8 +33,10 @@ export function LoginScreen() {
     <div className="flex min-h-screen items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="mb-8 text-center">
-          <h1 className="text-2xl font-medium text-text">Trading Journal</h1>
-          <p className="mt-1 text-sm text-text-muted">Melde dich an, um fortzufahren.</p>
+          <img src={logo} alt="YP Trades" className="mx-auto mb-4 h-16 w-16 rounded-2xl" />
+          <h1 className="text-2xl font-medium text-text">YP Trades</h1>
+          <p className="mt-1 text-xs uppercase tracking-wide text-text-dim">Trading Journal</p>
+          <p className="mt-3 text-sm text-text-muted">Melde dich an, um fortzufahren.</p>
         </div>
         <Card>
           <form onSubmit={onSubmit} className="flex flex-col gap-4">
