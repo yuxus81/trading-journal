@@ -1,10 +1,12 @@
 import { useState } from 'react';
 import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import { useTrade, useTradeImages, useDeleteTrade } from './useTrades';
+import { useSetups } from './useSetups';
+import { useNewsTags } from './useNewsTags';
 import { TradeImageGallery } from './TradeImageGallery';
 import { useAccounts } from '@/features/accounts/useAccounts';
 import { removeImages } from '@/api/storage';
-import { Button, Card, ConfirmDialog, EmptyState, Spinner, StarRating, useToast } from '@/components/ui';
+import { Button, Card, ConfirmDialog, EmptyState, Spinner, StarRating, Tag, useToast } from '@/components/ui';
 import { formatSignedCurrency, formatDate } from '@/lib/format';
 import type { ReactNode } from 'react';
 
@@ -25,6 +27,8 @@ export function TradeDetailPage() {
   const { data: trade, isLoading } = useTrade(id);
   const { data: images } = useTradeImages(id);
   const { data: accounts } = useAccounts();
+  const { data: setups } = useSetups();
+  const { data: newsTags } = useNewsTags();
   const del = useDeleteTrade();
   const [confirm, setConfirm] = useState(false);
 
@@ -91,7 +95,9 @@ export function TradeDetailPage() {
             {trade.direction === 'long' ? 'Long' : trade.direction === 'short' ? 'Short' : '—'}
           </Field>
           <Field label="R-Multiple">{trade.r_multiple != null ? `${trade.r_multiple}R` : '—'}</Field>
-          <Field label="Setup">{trade.setup ?? '—'}</Field>
+          <Field label="Setup">
+            {trade.setup ? <Tag label={trade.setup} color={setups?.find((s) => s.name === trade.setup)?.color} /> : '—'}
+          </Field>
           <Field label="Confidence">{trade.confidence != null ? `${trade.confidence}/10` : '—'}</Field>
           <Field label="Bewertung">
             {trade.rating ? <StarRating value={trade.rating} readOnly size="sm" /> : '—'}
@@ -100,9 +106,7 @@ export function TradeDetailPage() {
             {trade.news.length > 0 ? (
               <div className="flex flex-wrap gap-1">
                 {trade.news.map((n) => (
-                  <span key={n} className="rounded bg-border/70 px-1.5 py-0.5 text-xs text-text-muted">
-                    {n}
-                  </span>
+                  <Tag key={n} label={n} color={newsTags?.find((x) => x.name === n)?.color} />
                 ))}
               </div>
             ) : (

@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { StarRating } from '@/components/ui';
+import { StarRating, Tag } from '@/components/ui';
+import { useSetups } from './useSetups';
 import { formatCurrency, formatDate } from '@/lib/format';
 import type { Trade } from '@/types/db';
 
@@ -49,6 +50,8 @@ interface TradesTableProps {
 
 export function TradesTable({ trades, currency }: TradesTableProps) {
   const navigate = useNavigate();
+  const { data: setups } = useSetups();
+  const setupColor = (name: string) => setups?.find((s) => s.name === name)?.color;
   const [sortKey, setSortKey] = useState<SortKey>('trade_date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
@@ -111,7 +114,9 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
               <td className="px-4 py-3">
                 {t.rating ? <StarRating value={t.rating} readOnly size="sm" /> : <span className="text-text-dim">—</span>}
               </td>
-              <td className="px-4 py-3 text-text-muted">{t.setup ?? '—'}</td>
+              <td className="px-4 py-3">
+                {t.setup ? <Tag label={t.setup} color={setupColor(t.setup)} /> : <span className="text-text-dim">—</span>}
+              </td>
             </tr>
           ))}
         </tbody>
