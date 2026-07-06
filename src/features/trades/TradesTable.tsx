@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { InstrumentBadge, StarRating, Tag } from '@/components/ui';
 import { useSetups } from './useSetups';
+import { useTradeThumbnails } from './useTradeThumbnails';
 import { formatCurrency, formatDate } from '@/lib/format';
 import type { Trade } from '@/types/db';
 
@@ -52,6 +53,7 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
   const navigate = useNavigate();
   const { data: setups } = useSetups();
   const setupColor = (name: string) => setups?.find((s) => s.name === name)?.color;
+  const thumbnails = useTradeThumbnails(trades.map((t) => t.id));
   const [sortKey, setSortKey] = useState<SortKey>('trade_date');
   const [sortDir, setSortDir] = useState<SortDir>('desc');
 
@@ -78,10 +80,11 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
   const pnlColor = (n: number) => (n > 0 ? 'text-profit' : n < 0 ? 'text-loss' : 'text-text-muted');
 
   return (
-    <div className="overflow-x-auto rounded-card border border-border">
+    <div className="overflow-x-auto rounded-card border border-border bg-card">
       <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr className="border-b border-border text-left text-xs text-text-muted">
+            <th className="w-12 px-2 py-3" aria-hidden />
             {columns.map((c) => (
               <th key={c.key} className={`px-4 py-3 font-medium ${c.align === 'right' ? 'text-right' : ''}`}>
                 <button onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1 hover:text-text">
@@ -99,6 +102,13 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
               onClick={() => navigate(`/trades/${t.id}`)}
               className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-border/30"
             >
+              <td className="px-2 py-2">
+                {thumbnails[t.id] ? (
+                  <img src={thumbnails[t.id]} alt="" className="h-9 w-9 rounded-md border border-border object-cover" />
+                ) : (
+                  <div className="h-9 w-9 rounded-md border border-dashed border-border/60" />
+                )}
+              </td>
               <td className="px-4 py-3"><InstrumentBadge asset={t.asset} /></td>
               <td className="whitespace-nowrap px-4 py-3 text-text-muted">
                 {formatDate(t.trade_date)}

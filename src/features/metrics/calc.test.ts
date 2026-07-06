@@ -6,7 +6,7 @@ const acc: Account = {
   id: 'a',
   user_id: 'u',
   name: 'A',
-  account_type: 'prop',
+  account_type: 'demo',
   starting_capital: 1000,
   currency: 'USD',
   created_at: '2026-01-01T00:00:00Z',

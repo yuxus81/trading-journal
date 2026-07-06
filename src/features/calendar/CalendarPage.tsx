@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { useUiStore } from '@/store/uiStore';
 import { useAccounts } from '@/features/accounts/useAccounts';
 import { useTrades } from '@/features/trades/useTrades';
-import { maxAbsPnl, monthGrid, pnlByDay, tradesByDay } from './calendarData';
+import { maxAbsPnl, monthGrid, pnlByDay, tradeCountByDay } from './calendarData';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { DayTradesPanel } from './DayTradesPanel';
 import { Button, Card, EmptyState, Spinner } from '@/components/ui';
@@ -28,7 +28,7 @@ export function CalendarPage() {
   const [selected, setSelected] = useState<string | null>(null);
 
   const pnlMap = useMemo(() => pnlByDay(trades ?? []), [trades]);
-  const tradesMap = useMemo(() => tradesByDay(trades ?? []), [trades]);
+  const tradeCountMap = useMemo(() => tradeCountByDay(trades ?? []), [trades]);
   const cells = useMemo(() => monthGrid(year, month), [year, month]);
   const maxAbs = useMemo(() => maxAbsPnl(cells, pnlMap), [cells, pnlMap]);
   const monthTotal = cells.reduce((s, d) => (d ? s + (pnlMap.get(d) ?? 0) : s), 0);
@@ -98,7 +98,7 @@ export function CalendarPage() {
         <CalendarHeatmap
           cells={cells}
           pnlMap={pnlMap}
-          tradesMap={tradesMap}
+          tradeCountMap={tradeCountMap}
           maxAbs={maxAbs}
           currency={currency}
           selected={selected}
@@ -106,7 +106,9 @@ export function CalendarPage() {
         />
       </Card>
 
-      {selected && <DayTradesPanel day={selected} trades={dayTrades} currency={currency} />}
+      {selected && (
+        <DayTradesPanel day={selected} trades={dayTrades} currency={currency} onClose={() => setSelected(null)} />
+      )}
     </div>
   );
 }

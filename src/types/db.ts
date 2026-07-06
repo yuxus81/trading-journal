@@ -1,4 +1,4 @@
-export type AccountType = 'prop' | 'live' | 'demo';
+export type AccountType = 'backtest' | 'demo' | 'eval' | 'funded' | 'live';
 export type Direction = 'long' | 'short';
 
 export interface Account {

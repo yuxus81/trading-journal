@@ -7,14 +7,10 @@ export function pnlByDay(trades: Trade[]): Map<string, number> {
   return map;
 }
 
-/** Groups trades per calendar day (YYYY-MM-DD), for per-day trade indicators. */
-export function tradesByDay(trades: Trade[]): Map<string, Trade[]> {
-  const map = new Map<string, Trade[]>();
-  for (const t of trades) {
-    const list = map.get(t.trade_date);
-    if (list) list.push(t);
-    else map.set(t.trade_date, [t]);
-  }
+/** Counts trades per calendar day (YYYY-MM-DD). */
+export function tradeCountByDay(trades: Trade[]): Map<string, number> {
+  const map = new Map<string, number>();
+  for (const t of trades) map.set(t.trade_date, (map.get(t.trade_date) ?? 0) + 1);
   return map;
 }
 

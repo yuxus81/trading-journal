@@ -3,9 +3,11 @@ import { Button, Input, Modal, Select } from '@/components/ui';
 import type { Account, AccountType, NewAccount } from '@/types/db';
 
 const typeOptions = [
-  { value: 'prop', label: 'Prop' },
-  { value: 'live', label: 'Live' },
+  { value: 'backtest', label: 'Backtest' },
   { value: 'demo', label: 'Demo' },
+  { value: 'eval', label: 'Eval' },
+  { value: 'funded', label: 'Funded' },
+  { value: 'live', label: 'Live' },
 ];
 
 const currencyOptions = [
@@ -24,7 +26,7 @@ interface AccountFormProps {
 /** Mounted only while open, so state always starts from `initial`. */
 export function AccountForm({ initial, busy, onClose, onSubmit }: AccountFormProps) {
   const [name, setName] = useState(initial?.name ?? '');
-  const [type, setType] = useState<AccountType>(initial?.account_type ?? 'prop');
+  const [type, setType] = useState<AccountType>(initial?.account_type ?? 'demo');
   const [capital, setCapital] = useState(initial ? String(initial.starting_capital) : '');
   const [currency, setCurrency] = useState(initial?.currency ?? 'USD');
 

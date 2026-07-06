@@ -16,7 +16,7 @@ export { Lightbox } from './Lightbox';
 export { ToastHost } from './ToastHost';
 export { useToast, useToastStore } from './toastStore';
 export type { Toast, ToastType } from './toastStore';
-export { Tag, TAG_COLOR_LIST, tagPillClass, swatchClass } from './Tag';
+export { Tag, TAG_COLOR_LIST, tagPillClass, gradientBadgeClass, swatchClass } from './Tag';
 export type { TagColor } from './Tag';
 export { TagPicker } from './TagPicker';
 export { InstrumentBadge } from './InstrumentBadge';
