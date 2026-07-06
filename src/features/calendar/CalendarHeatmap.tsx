@@ -2,15 +2,17 @@ import { formatCurrency } from '@/lib/format';
 
 const WEEKDAYS = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'];
 
-// Profit/loss token RGB (for dynamic alpha backgrounds).
-const PROFIT_RGB = '74,222,158';
-const LOSS_RGB = '249,128,128';
+// Fixed 4-step bands (darkest → richest) — no computed opacity, so small-PnL
+// days stay clearly visible instead of fading into the card background.
+const LOSS_BANDS = ['#3B1F22', '#5A242A', '#7A2C31', '#A6343B'];
+const WIN_BANDS = ['#1F3B2E', '#245A3A', '#2C7A48', '#2FA65B'];
 
-function cellStyle(pnl: number | undefined, maxAbs: number): React.CSSProperties {
-  if (pnl === undefined || pnl === 0 || maxAbs === 0) return {};
-  const alpha = 0.15 + 0.75 * (Math.abs(pnl) / maxAbs);
-  const rgb = pnl > 0 ? PROFIT_RGB : LOSS_RGB;
-  return { backgroundColor: `rgba(${rgb},${alpha.toFixed(2)})` };
+function bandFor(pnl: number, maxAbs: number): string | undefined {
+  if (pnl === 0 || maxAbs === 0) return undefined;
+  const bands = pnl > 0 ? WIN_BANDS : LOSS_BANDS;
+  const ratio = Math.abs(pnl) / maxAbs;
+  const idx = Math.min(bands.length - 1, Math.floor(ratio * bands.length));
+  return bands[idx];
 }
 
 interface CalendarHeatmapProps {
@@ -36,21 +38,18 @@ export function CalendarHeatmap({ cells, pnlMap, maxAbs, currency, selected, onS
           const pnl = pnlMap.get(day);
           const dayNum = Number(day.slice(8, 10));
           const active = selected === day;
+          const band = pnl !== undefined ? bandFor(pnl, maxAbs) : undefined;
           return (
             <button
               key={day}
               onClick={() => onSelect(day)}
-              style={cellStyle(pnl, maxAbs)}
-              className={`flex aspect-square flex-col justify-between rounded-md border p-1.5 text-left transition-colors ${
+              style={band ? { backgroundColor: band } : undefined}
+              className={`flex aspect-square flex-col justify-between rounded-md border p-2 text-left transition-colors ${
                 active ? 'border-accent' : 'border-border hover:border-border-strong'
               }`}
             >
-              <span className="text-[11px] text-text-muted">{dayNum}</span>
-              {pnl !== undefined && (
-                <span className={`text-[10px] font-medium ${pnl > 0 ? 'text-profit' : pnl < 0 ? 'text-loss' : 'text-text-dim'}`}>
-                  {formatCurrency(pnl, currency)}
-                </span>
-              )}
+              <span className="text-sm font-medium text-text">{dayNum}</span>
+              {pnl !== undefined && <span className="text-xs font-semibold text-text">{formatCurrency(pnl, currency)}</span>}
             </button>
           );
         })}
