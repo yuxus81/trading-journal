@@ -40,7 +40,6 @@ export function TradesPage() {
     <div className="flex flex-col gap-5">
       <div className="flex items-center justify-between">
         <h1 className="text-xl font-medium text-text">Trades</h1>
-        <Button onClick={newTrade}>+ Neuer Trade</Button>
       </div>
 
       <TradeFilters assets={assets} setups={(setups ?? []).map((s) => s.name)} />
