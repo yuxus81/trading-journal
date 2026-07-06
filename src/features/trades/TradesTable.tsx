@@ -84,7 +84,6 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
       <table className="w-full min-w-[640px] text-sm">
         <thead>
           <tr className="border-b border-border text-left text-xs text-text-muted">
-            <th className="w-12 px-2 py-3" aria-hidden />
             {columns.map((c) => (
               <th key={c.key} className={`px-4 py-3 font-medium ${c.align === 'right' ? 'text-right' : ''}`}>
                 <button onClick={() => toggleSort(c.key)} className="inline-flex items-center gap-1 hover:text-text">
@@ -93,6 +92,7 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
                 </button>
               </th>
             ))}
+            <th className="w-12 px-2 py-3" aria-hidden />
           </tr>
         </thead>
         <tbody>
@@ -102,13 +102,6 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
               onClick={() => navigate(`/trades/${t.id}`)}
               className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-border/30"
             >
-              <td className="px-2 py-2">
-                {thumbnails[t.id] ? (
-                  <img src={thumbnails[t.id]} alt="" className="h-9 w-9 rounded-md border border-border object-cover" />
-                ) : (
-                  <div className="h-9 w-9 rounded-md border border-dashed border-border/60" />
-                )}
-              </td>
               <td className="px-4 py-3"><InstrumentBadge asset={t.asset} /></td>
               <td className="whitespace-nowrap px-4 py-3 text-text-muted">
                 {formatDate(t.trade_date)}
@@ -126,6 +119,13 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
               </td>
               <td className="px-4 py-3">
                 {t.setup ? <Tag label={t.setup} color={setupColor(t.setup)} /> : <span className="text-text-dim">—</span>}
+              </td>
+              <td className="px-2 py-2">
+                {thumbnails[t.id] ? (
+                  <img src={thumbnails[t.id]} alt="" className="h-9 w-9 rounded-md border border-border object-cover" />
+                ) : (
+                  <div className="h-9 w-9 rounded-md border border-dashed border-border/60" />
+                )}
               </td>
             </tr>
           ))}
