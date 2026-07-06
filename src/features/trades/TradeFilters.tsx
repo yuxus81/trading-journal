@@ -10,7 +10,6 @@ const resultTabs: { value: ResultFilter; label: string }[] = [
 interface TradeFiltersProps {
   assets: string[];
   setups: string[];
-  /** Hide the setup/asset selects (e.g. on the dashboard). */
   compact?: boolean;
 }
 
@@ -53,27 +52,6 @@ export function TradeFilters({ assets, setups, compact = false }: TradeFiltersPr
           </div>
         </>
       )}
-
-      <div className="flex items-end gap-2">
-        <label className="flex flex-col gap-1.5 text-sm text-text-muted">
-          Von
-          <input
-            type="date"
-            value={filters.dateFrom ?? ''}
-            onChange={(e) => setTradeFilters({ dateFrom: e.target.value || null })}
-            className="h-10 rounded-input border border-border bg-bg px-2 text-sm text-text focus:border-accent focus:outline-none"
-          />
-        </label>
-        <label className="flex flex-col gap-1.5 text-sm text-text-muted">
-          Bis
-          <input
-            type="date"
-            value={filters.dateTo ?? ''}
-            onChange={(e) => setTradeFilters({ dateTo: e.target.value || null })}
-            className="h-10 rounded-input border border-border bg-bg px-2 text-sm text-text focus:border-accent focus:outline-none"
-          />
-        </label>
-      </div>
 
       <Button variant="ghost" size="sm" onClick={resetFilters}>
         Zurücksetzen

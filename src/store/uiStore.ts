@@ -5,16 +5,12 @@ export type ResultFilter = 'all' | 'wins' | 'losses';
 
 export interface TradeFilters {
   result: ResultFilter;
-  dateFrom: string | null;
-  dateTo: string | null;
   setup: string | null;
   asset: string | null;
 }
 
 const emptyFilters: TradeFilters = {
   result: 'all',
-  dateFrom: null,
-  dateTo: null,
   setup: null,
   asset: null,
 };
