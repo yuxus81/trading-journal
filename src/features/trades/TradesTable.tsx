@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { StarRating, Tag } from '@/components/ui';
+import { InstrumentBadge, StarRating, Tag } from '@/components/ui';
 import { useSetups } from './useSetups';
 import { formatCurrency, formatDate } from '@/lib/format';
 import type { Trade } from '@/types/db';
@@ -99,7 +99,7 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
               onClick={() => navigate(`/trades/${t.id}`)}
               className="cursor-pointer border-b border-border/60 transition-colors last:border-0 hover:bg-border/30"
             >
-              <td className="px-4 py-3 font-medium text-text">{t.asset}</td>
+              <td className="px-4 py-3"><InstrumentBadge asset={t.asset} /></td>
               <td className="whitespace-nowrap px-4 py-3 text-text-muted">
                 {formatDate(t.trade_date)}
                 {t.exec_time && <span className="text-text-dim"> · {t.exec_time.slice(0, 5)}</span>}

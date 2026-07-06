@@ -7,12 +7,18 @@ export interface TradeFilters {
   result: ResultFilter;
   setup: string | null;
   asset: string | null;
+  news: string[];
+  timeFrom: string | null;
+  timeTo: string | null;
 }
 
 const emptyFilters: TradeFilters = {
   result: 'all',
   setup: null,
   asset: null,
+  news: [],
+  timeFrom: null,
+  timeTo: null,
 };
 
 interface UiState {

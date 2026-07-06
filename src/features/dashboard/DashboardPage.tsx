@@ -51,7 +51,7 @@ export function DashboardPage() {
         <h1 className="text-xl font-medium text-text">Dashboard</h1>
       </div>
 
-      {hasTrades && <TradeFilters assets={[]} setups={[]} compact />}
+      {hasTrades && <TradeFilters assets={[]} setups={[]} newsTags={[]} compact />}
 
       {!hasTrades ? (
         <EmptyState

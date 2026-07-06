@@ -6,7 +6,7 @@ import { useNewsTags } from './useNewsTags';
 import { TradeImageGallery } from './TradeImageGallery';
 import { useAccounts } from '@/features/accounts/useAccounts';
 import { removeImages } from '@/api/storage';
-import { Button, Card, ConfirmDialog, EmptyState, Spinner, StarRating, Tag, useToast } from '@/components/ui';
+import { Button, Card, ConfirmDialog, EmptyState, InstrumentBadge, Spinner, StarRating, Tag, useToast } from '@/components/ui';
 import { formatSignedCurrency, formatDate } from '@/lib/format';
 import type { ReactNode } from 'react';
 
@@ -72,10 +72,13 @@ export function TradeDetailPage() {
           <Link to="/trades" className="text-sm text-text-dim hover:text-text">
             ← Trades
           </Link>
-          <h1 className="mt-1 text-xl font-medium text-text">
-            {trade.asset} · {formatDate(trade.trade_date)}
-            {trade.exec_time && <span className="text-text-muted"> · {trade.exec_time.slice(0, 5)}</span>}
-          </h1>
+          <div className="mt-1 flex items-center gap-2">
+            <InstrumentBadge asset={trade.asset} />
+            <h1 className="text-xl font-medium text-text">
+              {formatDate(trade.trade_date)}
+              {trade.exec_time && <span className="text-text-muted"> · {trade.exec_time.slice(0, 5)}</span>}
+            </h1>
+          </div>
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" onClick={onEdit}>

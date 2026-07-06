@@ -7,6 +7,17 @@ export function pnlByDay(trades: Trade[]): Map<string, number> {
   return map;
 }
 
+/** Groups trades per calendar day (YYYY-MM-DD), for per-day trade indicators. */
+export function tradesByDay(trades: Trade[]): Map<string, Trade[]> {
+  const map = new Map<string, Trade[]>();
+  for (const t of trades) {
+    const list = map.get(t.trade_date);
+    if (list) list.push(t);
+    else map.set(t.trade_date, [t]);
+  }
+  return map;
+}
+
 /** Builds a Monday-first month grid; null cells pad the leading/trailing week. */
 export function monthGrid(year: number, month: number): (string | null)[] {
   const first = new Date(year, month, 1);
