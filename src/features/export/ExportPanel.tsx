@@ -2,7 +2,6 @@ import { useState } from 'react';
 import { Button, Modal, useToast } from '@/components/ui';
 import { toCsv, downloadCsv } from './csv';
 import { listAllTrades } from '@/api/trades';
-import { listAllCashEvents } from '@/api/cashEvents';
 import { listAccounts } from '@/api/accounts';
 import type { Trade } from '@/types/db';
 
@@ -11,7 +10,6 @@ const TRADE_COLUMNS = [
   'r_multiple', 'setup', 'confidence', 'news', 'notes', 'created_at',
 ];
 const ACCOUNT_COLUMNS = ['id', 'name', 'account_type', 'starting_capital', 'currency', 'created_at'];
-const CASH_COLUMNS = ['id', 'account_id', 'type', 'amount', 'event_date', 'note', 'created_at'];
 
 function stamp(): string {
   return new Date().toISOString().slice(0, 10);
@@ -26,11 +24,10 @@ export function ExportPanel({ open, onClose }: ExportPanelProps) {
   const toast = useToast();
   const [trades, setTrades] = useState(true);
   const [accounts, setAccounts] = useState(false);
-  const [cash, setCash] = useState(false);
   const [busy, setBusy] = useState(false);
 
   const run = async () => {
-    if (!trades && !accounts && !cash) {
+    if (!trades && !accounts) {
       toast('Bitte mindestens einen Datensatz wählen.', 'error');
       return;
     }
@@ -44,10 +41,6 @@ export function ExportPanel({ open, onClose }: ExportPanelProps) {
       if (accounts) {
         const rows = await listAccounts();
         downloadCsv(`accounts-${stamp()}.csv`, toCsv(rows, ACCOUNT_COLUMNS));
-      }
-      if (cash) {
-        const rows = await listAllCashEvents();
-        downloadCsv(`cash-events-${stamp()}.csv`, toCsv(rows, CASH_COLUMNS));
       }
       toast('Export gestartet.', 'success');
       onClose();
@@ -78,7 +71,6 @@ export function ExportPanel({ open, onClose }: ExportPanelProps) {
       <div className="mt-4 flex flex-col gap-2">
         <Row label="Trades (alle Konten)" checked={trades} onChange={setTrades} />
         <Row label="Konten" checked={accounts} onChange={setAccounts} />
-        <Row label="Cash-Events" checked={cash} onChange={setCash} />
       </div>
       <div className="mt-6 flex justify-end gap-2">
         <Button variant="ghost" onClick={onClose}>

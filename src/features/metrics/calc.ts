@@ -1,4 +1,4 @@
-import type { Account, CashEvent, Trade } from '@/types/db';
+import type { Account, Trade } from '@/types/db';
 import type { EquityPoint, Metrics, RatingStat, SetupStat } from './types';
 
 /**
@@ -18,11 +18,10 @@ export function sortTrades(trades: Trade[]): Trade[] {
   });
 }
 
-/** starting_capital + Σ trade pnl + Σ cash event amount. Never stored. */
-export function currentCapital(account: Account, trades: Trade[], cashEvents: CashEvent[]): number {
+/** starting_capital + Σ trade pnl. Never stored. */
+export function currentCapital(account: Account, trades: Trade[]): number {
   const pnl = trades.reduce((s, t) => s + t.pnl, 0);
-  const cash = cashEvents.reduce((s, e) => s + e.amount, 0);
-  return account.starting_capital + pnl + cash;
+  return account.starting_capital + pnl;
 }
 
 function mean(values: number[]): number {

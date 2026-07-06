@@ -1,4 +1,3 @@
-import { useCashEvents } from './useCashEvents';
 import { useTrades } from '@/features/trades/useTrades';
 import { currentCapital } from '@/features/metrics/calc';
 import { formatCurrency } from '@/lib/format';
@@ -21,12 +20,7 @@ interface AccountCardProps {
 
 export function AccountCard({ account, active, onSelect, onEdit, onDelete }: AccountCardProps) {
   const trades = useTrades(account.id);
-  const cash = useCashEvents(account.id);
-
-  const capital =
-    trades.data && cash.data
-      ? currentCapital(account, trades.data, cash.data)
-      : account.starting_capital;
+  const capital = trades.data ? currentCapital(account, trades.data) : account.starting_capital;
 
   return (
     <Card className={active ? 'border-accent/60' : ''}>

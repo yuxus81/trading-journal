@@ -1,6 +1,5 @@
 import { useEffect } from 'react';
 import { useAccounts } from './useAccounts';
-import { useCashEvents } from './useCashEvents';
 import { useTrades } from '@/features/trades/useTrades';
 import { useUiStore } from '@/store/uiStore';
 import { currentCapital } from '@/features/metrics/calc';
@@ -21,11 +20,7 @@ export function AccountSelector() {
 
   const active = accounts?.find((a) => a.id === activeAccountId) ?? null;
   const trades = useTrades(activeAccountId);
-  const cash = useCashEvents(activeAccountId);
-  const capital =
-    active && trades.data && cash.data
-      ? currentCapital(active, trades.data, cash.data)
-      : (active?.starting_capital ?? 0);
+  const capital = active && trades.data ? currentCapital(active, trades.data) : (active?.starting_capital ?? 0);
 
   if (!accounts || accounts.length === 0) {
     return <span className="text-sm text-text-dim">Kein Konto — unter „Konten" anlegen</span>;

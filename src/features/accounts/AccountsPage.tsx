@@ -3,7 +3,6 @@ import { useAccounts, useCreateAccount, useDeleteAccount, useUpdateAccount } fro
 import { useUiStore } from '@/store/uiStore';
 import { AccountCard } from './AccountCard';
 import { AccountForm } from './AccountForm';
-import { CashEventsPanel } from './CashEventsPanel';
 import { Button, ConfirmDialog, EmptyState, Spinner, useToast } from '@/components/ui';
 import type { Account, NewAccount } from '@/types/db';
 
@@ -20,8 +19,6 @@ export function AccountsPage() {
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState<Account | undefined>();
   const [deleting, setDeleting] = useState<Account | undefined>();
-
-  const activeAccount = accounts?.find((a) => a.id === activeAccountId) ?? null;
 
   const openNew = () => {
     setEditing(undefined);
@@ -91,26 +88,18 @@ export function AccountsPage() {
           action={<Button onClick={openNew}>+ Konto anlegen</Button>}
         />
       ) : (
-        <>
-          <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-            {accounts.map((a) => (
-              <AccountCard
-                key={a.id}
-                account={a}
-                active={a.id === activeAccountId}
-                onSelect={() => setActiveAccount(a.id)}
-                onEdit={() => openEdit(a)}
-                onDelete={() => setDeleting(a)}
-              />
-            ))}
-          </div>
-
-          {activeAccount && (
-            <div className="max-w-2xl">
-              <CashEventsPanel accountId={activeAccount.id} currency={activeAccount.currency} />
-            </div>
-          )}
-        </>
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {accounts.map((a) => (
+            <AccountCard
+              key={a.id}
+              account={a}
+              active={a.id === activeAccountId}
+              onSelect={() => setActiveAccount(a.id)}
+              onEdit={() => openEdit(a)}
+              onDelete={() => setDeleting(a)}
+            />
+          ))}
+        </div>
       )}
 
       {formOpen && (
@@ -125,7 +114,7 @@ export function AccountsPage() {
       <ConfirmDialog
         open={!!deleting}
         title="Konto löschen?"
-        message={`„${deleting?.name}" und alle zugehörigen Trades und Cash-Events werden dauerhaft gelöscht.`}
+        message={`„${deleting?.name}" und alle zugehörigen Trades werden dauerhaft gelöscht.`}
         confirmLabel="Löschen"
         danger
         onConfirm={confirmDelete}

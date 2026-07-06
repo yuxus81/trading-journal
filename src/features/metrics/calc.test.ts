@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { computeMetrics, currentCapital, sortTrades } from '@/features/metrics/calc';
-import type { Account, Trade, CashEvent } from '@/types/db';
+import type { Account, Trade } from '@/types/db';
 
 const acc: Account = {
   id: 'a',
@@ -122,11 +122,8 @@ describe('computeMetrics', () => {
 });
 
 describe('currentCapital', () => {
-  it('adds pnl and cash events to starting capital', () => {
-    const ce: CashEvent[] = [
-      { id: 'c', account_id: 'a', user_id: 'u', type: 'payout', amount: -100, event_date: '2026-01-02', note: null, created_at: 'x' },
-    ];
-    expect(currentCapital(acc, [t({ pnl: 300 })], ce)).toBe(1200);
+  it('adds trade pnl to starting capital', () => {
+    expect(currentCapital(acc, [t({ pnl: 300 }), t({ pnl: -50 })])).toBe(1250);
   });
 });
 
