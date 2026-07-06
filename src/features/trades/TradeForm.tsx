@@ -4,10 +4,11 @@ import { useAuth } from '@/features/auth/useAuth';
 import { useUiStore } from '@/store/uiStore';
 import { useCreateTrade, useUpdateTrade, useTrades } from './useTrades';
 import { useCreateSetup, useSetups } from './useSetups';
+import { useCreateNewsTag, useNewsTags } from './useNewsTags';
 import { ImageUploader } from './ImageUploader';
 import { uploadImage } from '@/api/storage';
 import { addTradeImage } from '@/api/tradeImages';
-import { Button, Input, StarRating, Slider, TagInput, Textarea, useToast } from '@/components/ui';
+import { Button, Input, StarRating, Slider, TagPicker, Textarea, useToast } from '@/components/ui';
 import type { Direction, NewTrade, Trade, UpdateTrade } from '@/types/db';
 
 const DEFAULT_ASSETS = ['MNQ', 'MES'];
@@ -29,6 +30,8 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
   const update = useUpdateTrade();
   const { data: setups } = useSetups();
   const createSetup = useCreateSetup();
+  const { data: newsTags } = useNewsTags();
+  const createNewsTag = useCreateNewsTag();
   const { data: trades } = useTrades(activeAccountId);
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -54,8 +57,6 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
     trades?.forEach((t) => used.add(t.asset));
     return [...used];
   }, [trades]);
-
-  const setupNames = setups?.map((s) => s.name) ?? [];
 
   const submit = async () => {
     if (!asset.trim()) return toast('Bitte ein Asset angeben.', 'error');
@@ -95,11 +96,6 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
         queryClient.invalidateQueries({ queryKey: ['tradeImages', tradeId] });
       }
 
-      const name = setup.trim();
-      if (name && !setupNames.includes(name)) {
-        await createSetup.mutateAsync({ name, color: 'gray' });
-      }
-
       toast(initial ? 'Trade aktualisiert.' : 'Trade gespeichert.', 'success');
       onDone();
     } catch {
@@ -136,7 +132,15 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
         <StarRating value={rating} onChange={setRating} />
       </div>
 
-      <TagInput label="News des Tages" value={news} onChange={setNews} placeholder="z. B. CPI 14:30" />
+      <TagPicker
+        label="News des Tages"
+        mode="multi"
+        options={newsTags ?? []}
+        value={news}
+        onChange={setNews}
+        onCreate={(name, color) => createNewsTag.mutate({ name, color })}
+        placeholder="z. B. CPI 14:30"
+      />
 
       <ImageUploader value={images} onChange={setImages} />
 
@@ -164,14 +168,15 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <Input label="R-Multiple" type="number" inputMode="decimal" step="any" value={rMultiple} onChange={(e) => setRMultiple(e.target.value)} placeholder="z. B. 2.5" />
-        <div className="flex flex-col gap-1.5">
-          <Input label="Setup / Strategie" list="setup-suggestions" value={setup} onChange={(e) => setSetup(e.target.value)} placeholder="z. B. Breakout" />
-          <datalist id="setup-suggestions">
-            {setupNames.map((n) => (
-              <option key={n} value={n} />
-            ))}
-          </datalist>
-        </div>
+        <TagPicker
+          label="Setup / Strategie"
+          mode="single"
+          options={setups ?? []}
+          value={setup ? [setup] : []}
+          onChange={(names) => setSetup(names[0] ?? '')}
+          onCreate={(name, color) => createSetup.mutate({ name, color })}
+          placeholder="z. B. Breakout"
+        />
       </div>
 
       <Slider label="Confidence (1–10)" min={1} max={10} value={confidence} onChange={setConfidence} />
