@@ -11,7 +11,7 @@ export default {
         card: '#212329',
         border: { DEFAULT: '#2A2C33', strong: '#31333B' },
         text: { DEFAULT: '#ECEDEF', muted: '#8B8D96', dim: '#6E7079' },
-        accent: { DEFAULT: '#8B85EA', ink: '#12103A' },
+        accent: { DEFAULT: '#E7E8EC', ink: '#14151A' },
         profit: '#4ADE9E',
         loss: '#F98080',
         star: '#EAB94D',
