@@ -21,17 +21,20 @@ export function TradeFilters({ assets, setups, compact = false }: TradeFiltersPr
   return (
     <div className="flex flex-wrap items-end gap-3">
       <div className="inline-flex rounded-input border border-border bg-bg p-1">
-        {resultTabs.map((t) => (
-          <button
-            key={t.value}
-            onClick={() => setTradeFilters({ result: t.value })}
-            className={`h-8 rounded-[7px] px-3 text-sm font-medium transition-colors ${
-              filters.result === t.value ? 'bg-accent text-accent-ink' : 'text-text-muted hover:text-text'
-            }`}
-          >
-            {t.label}
-          </button>
-        ))}
+        {resultTabs.map((t) => {
+          const active = filters.result === t.value;
+          const activeClass =
+            t.value === 'wins' ? 'bg-profit/15 text-profit' : t.value === 'losses' ? 'bg-loss/15 text-loss' : 'bg-accent text-accent-ink';
+          return (
+            <button
+              key={t.value}
+              onClick={() => setTradeFilters({ result: t.value })}
+              className={`h-8 rounded-[7px] px-3 text-sm font-medium transition-colors ${active ? activeClass : 'text-text-muted hover:text-text'}`}
+            >
+              {t.label}
+            </button>
+          );
+        })}
       </div>
 
       {!compact && (

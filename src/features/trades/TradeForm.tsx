@@ -149,7 +149,11 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
               type="button"
               onClick={() => setDirection((cur) => (cur === d ? null : d))}
               className={`h-8 min-w-[5rem] rounded-[7px] px-4 text-sm font-medium capitalize transition-colors ${
-                direction === d ? 'bg-accent text-accent-ink' : 'text-text-muted hover:text-text'
+                direction !== d
+                  ? 'text-text-muted hover:text-text'
+                  : d === 'long'
+                    ? 'bg-profit/15 text-profit'
+                    : 'bg-loss/15 text-loss'
               }`}
             >
               {d === 'long' ? 'Long' : 'Short'}
