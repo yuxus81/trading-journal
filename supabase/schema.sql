@@ -53,11 +53,22 @@ create table trade_images (
   created_at timestamptz not null default now()
 );
 
--- SETUPS (reusable tags for the setup field)
+-- SETUPS (reusable, colored tags for the setup field)
 create table setups (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
-  name text not null
+  name text not null,
+  color text not null default 'gray'
+);
+
+-- NEWS TAGS (reusable, colored tags for the trade's "news of the day" field)
+create table news_tags (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text not null,
+  color text not null default 'gray',
+  created_at timestamptz not null default now(),
+  unique (user_id, name)
 );
 
 -- Enable RLS
@@ -66,6 +77,7 @@ alter table cash_events  enable row level security;
 alter table trades       enable row level security;
 alter table trade_images enable row level security;
 alter table setups       enable row level security;
+alter table news_tags    enable row level security;
 
 -- RLS policies: only own rows
 create policy "own accounts"     on accounts     for all using (user_id = auth.uid()) with check (user_id = auth.uid());
@@ -73,10 +85,11 @@ create policy "own cash_events"  on cash_events  for all using (user_id = auth.u
 create policy "own trades"       on trades       for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "own trade_images" on trade_images for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "own setups"       on setups       for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "own news_tags"    on news_tags    for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- Grants for the Data API (required for projects created after 2026-05-30)
 grant usage on schema public to authenticated;
-grant all on accounts, cash_events, trades, trade_images, setups to authenticated;
+grant all on accounts, cash_events, trades, trade_images, setups, news_tags to authenticated;
 
 -- Storage bucket for images (private)
 insert into storage.buckets (id, name, public) values ('trade-images','trade-images', false)

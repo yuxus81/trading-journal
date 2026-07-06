@@ -8,7 +8,7 @@ export function useSetups() {
 export function useCreateSetup() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (name: string) => createSetup(name),
+    mutationFn: ({ name, color }: { name: string; color: string }) => createSetup(name, color),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['setups'] }),
   });
 }

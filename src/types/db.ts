@@ -41,6 +41,15 @@ export interface Setup {
   id: string;
   user_id: string;
   name: string;
+  color: string;
+}
+
+export interface NewsTag {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  created_at: string;
 }
 
 export type NewAccount = Pick<Account, 'name' | 'account_type' | 'starting_capital' | 'currency'>;

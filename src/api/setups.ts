@@ -7,8 +7,8 @@ export async function listSetups(): Promise<Setup[]> {
   return data as Setup[];
 }
 
-export async function createSetup(name: string): Promise<Setup> {
-  const { data, error } = await supabase.from('setups').insert({ name }).select().single();
+export async function createSetup(name: string, color: string): Promise<Setup> {
+  const { data, error } = await supabase.from('setups').insert({ name, color }).select().single();
   if (error) throw error;
   return data as Setup;
 }

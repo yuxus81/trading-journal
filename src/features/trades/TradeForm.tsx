@@ -97,7 +97,7 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
 
       const name = setup.trim();
       if (name && !setupNames.includes(name)) {
-        await createSetup.mutateAsync(name);
+        await createSetup.mutateAsync({ name, color: 'gray' });
       }
 
       toast(initial ? 'Trade aktualisiert.' : 'Trade gespeichert.', 'success');
