@@ -1,12 +1,15 @@
 import { useState } from 'react';
 import { useUiStore, type ResultFilter } from '@/store/uiStore';
-import { Button, Input, InstrumentBadge, Tag } from '@/components/ui';
+import { Button, ChevronDownIcon, FilterIcon, Input, InstrumentBadge, Segmented, Tag } from '@/components/ui';
+import type { SegmentOption } from '@/components/ui';
 import type { NewsTag, Setup } from '@/types/db';
 
-const resultTabs: { value: ResultFilter; label: string }[] = [
-  { value: 'all', label: 'Alle' },
-  { value: 'wins', label: 'Wins' },
-  { value: 'losses', label: 'Losses' },
+// The result filter is the one place where win/loss colour belongs in a
+// control: the switch adopts the colour of the outcome it is showing.
+const resultTabs: SegmentOption<ResultFilter>[] = [
+  { value: 'all', label: 'Alle', tone: 'default' },
+  { value: 'wins', label: 'Wins', tone: 'profit' },
+  { value: 'losses', label: 'Losses', tone: 'loss' },
 ];
 
 interface TradeFiltersProps {
@@ -37,37 +40,31 @@ export function TradeFilters({ assets, setups, newsTags, compact = false }: Trad
   return (
     <div className="flex flex-col gap-3">
       <div className="flex flex-wrap items-center gap-3">
-        <div className="inline-flex rounded-input border border-border bg-bg p-1">
-          {resultTabs.map((t) => {
-            const active = filters.result === t.value;
-            const activeClass =
-              t.value === 'wins' ? 'bg-profit/15 text-profit' : t.value === 'losses' ? 'bg-loss/15 text-loss' : 'bg-accent text-accent-ink';
-            return (
-              <button
-                key={t.value}
-                onClick={() => setTradeFilters({ result: t.value })}
-                className={`h-8 rounded-[7px] px-3 text-sm font-medium transition-colors ${active ? activeClass : 'text-text-muted hover:text-text'}`}
-              >
-                {t.label}
-              </button>
-            );
-          })}
-        </div>
+        <Segmented value={filters.result} onChange={(v) => setTradeFilters({ result: v })} options={resultTabs} />
 
         {!compact && (
           <button
             type="button"
             onClick={() => setOpen((o) => !o)}
-            className={`inline-flex h-8 items-center gap-1.5 rounded-input border px-3 text-sm font-medium transition-colors ${
-              open || activeCount > 0 ? 'border-accent/50 bg-accent/10 text-text' : 'border-border text-text-muted hover:text-text'
+            aria-expanded={open}
+            className={`inline-flex h-9 items-center gap-2 rounded-input border px-3 text-sm font-medium transition-colors ${
+              open || activeCount > 0
+                ? 'border-brand/50 bg-brand/12 text-text'
+                : 'border-border text-text-muted hover:border-border-strong hover:text-text'
             }`}
           >
+            <FilterIcon width={15} height={15} />
             Filter
             {activeCount > 0 && (
-              <span className="flex h-4 min-w-4 items-center justify-center rounded-full bg-accent px-1 text-[10px] font-semibold text-accent-ink">
+              <span className="num flex h-4 min-w-4 items-center justify-center rounded-full bg-brand px-1 text-[10px] font-semibold text-accent-ink">
                 {activeCount}
               </span>
             )}
+            <ChevronDownIcon
+              width={14}
+              height={14}
+              className={`transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+            />
           </button>
         )}
 
@@ -79,90 +76,103 @@ export function TradeFilters({ assets, setups, newsTags, compact = false }: Trad
       </div>
 
       {!compact && open && (
-        <div className="flex flex-col gap-4 rounded-card border border-border bg-card p-4">
+        <div className="flex animate-rise-in flex-col gap-4 rounded-card border border-border bg-card p-4">
           {setups.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-text-dim">Setup</span>
-              <div className="flex flex-wrap gap-1.5">
-                {setups.map((s) => {
-                  const selected = filters.setup === s.name;
-                  return (
-                    <button
-                      key={s.name}
-                      type="button"
-                      onClick={() => setTradeFilters({ setup: selected ? null : s.name })}
-                      className={`rounded-md transition-opacity ${selected ? '' : 'opacity-50 hover:opacity-80'}`}
-                    >
-                      <Tag label={s.name} color={s.color} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <FilterRow title="Setup">
+              {setups.map((s) => (
+                <FilterChip
+                  key={s.name}
+                  selected={filters.setup === s.name}
+                  onClick={() => setTradeFilters({ setup: filters.setup === s.name ? null : s.name })}
+                >
+                  <Tag label={s.name} color={s.color} />
+                </FilterChip>
+              ))}
+            </FilterRow>
           )}
 
           {assets.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-text-dim">Asset</span>
-              <div className="flex flex-wrap gap-1.5">
-                {assets.map((a) => {
-                  const selected = filters.asset === a;
-                  return (
-                    <button
-                      key={a}
-                      type="button"
-                      onClick={() => setTradeFilters({ asset: selected ? null : a })}
-                      className={`rounded-md transition-opacity ${selected ? '' : 'opacity-50 hover:opacity-80'}`}
-                    >
-                      <InstrumentBadge asset={a} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <FilterRow title="Asset">
+              {assets.map((a) => (
+                <FilterChip
+                  key={a}
+                  selected={filters.asset === a}
+                  onClick={() => setTradeFilters({ asset: filters.asset === a ? null : a })}
+                >
+                  <InstrumentBadge asset={a} />
+                </FilterChip>
+              ))}
+            </FilterRow>
           )}
 
           {newsTags.length > 0 && (
-            <div className="flex flex-col gap-1.5">
-              <span className="text-xs text-text-dim">News</span>
-              <div className="flex flex-wrap gap-1.5">
-                {newsTags.map((n) => {
-                  const selected = filters.news.includes(n.name);
-                  return (
-                    <button
-                      key={n.name}
-                      type="button"
-                      onClick={() => toggleNews(n.name)}
-                      className={`rounded-md transition-opacity ${selected ? '' : 'opacity-50 hover:opacity-80'}`}
-                    >
-                      <Tag label={n.name} color={n.color} />
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
+            <FilterRow title="News">
+              {newsTags.map((n) => (
+                <FilterChip
+                  key={n.name}
+                  selected={filters.news.includes(n.name)}
+                  onClick={() => toggleNews(n.name)}
+                >
+                  <Tag label={n.name} color={n.color} />
+                </FilterChip>
+              ))}
+            </FilterRow>
           )}
 
-          <div className="flex flex-col gap-1.5">
-            <span className="text-xs text-text-dim">Zeitfenster</span>
+          <FilterRow title="Zeitfenster">
             <div className="flex items-center gap-2">
               <Input
                 type="time"
+                aria-label="Von"
                 value={filters.timeFrom ?? ''}
                 onChange={(e) => setTradeFilters({ timeFrom: e.target.value || null })}
-                className="w-32"
+                className="num w-32"
               />
               <span className="text-text-dim">–</span>
               <Input
                 type="time"
+                aria-label="Bis"
                 value={filters.timeTo ?? ''}
                 onChange={(e) => setTradeFilters({ timeTo: e.target.value || null })}
-                className="w-32"
+                className="num w-32"
               />
             </div>
-          </div>
+          </FilterRow>
         </div>
       )}
     </div>
+  );
+}
+
+function FilterRow({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <span className="text-[10px] font-semibold uppercase tracking-[0.1em] text-text-dim">{title}</span>
+      <div className="flex flex-wrap items-center gap-1.5">{children}</div>
+    </div>
+  );
+}
+
+/** Unselected chips dim rather than disappear, so the full set stays scannable. */
+function FilterChip({
+  selected,
+  onClick,
+  children,
+}: {
+  selected: boolean;
+  onClick: () => void;
+  children: React.ReactNode;
+}) {
+  return (
+    <button
+      type="button"
+      aria-pressed={selected}
+      onClick={onClick}
+      className={`rounded-md p-0.5 transition-all duration-200 ${
+        selected ? 'ring-1 ring-brand/70' : 'opacity-45 hover:opacity-90'
+      }`}
+    >
+      {children}
+    </button>
   );
 }

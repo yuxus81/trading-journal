@@ -7,7 +7,7 @@ export function Spinner({ className = '' }: SpinnerProps) {
     <span
       role="status"
       aria-label="Lädt"
-      className={`inline-block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-accent ${className}`}
+      className={`inline-block h-4 w-4 animate-spin rounded-full border-2 border-border border-t-brand-bright ${className}`}
     />
   );
 }

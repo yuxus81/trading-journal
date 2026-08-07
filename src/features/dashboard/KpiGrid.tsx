@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import { KpiCard, type KpiTone } from './KpiCard';
+import { ChevronDownIcon } from '@/components/ui';
 import { formatCurrency, formatPercent, formatR, formatSignedCurrency } from '@/lib/format';
 import type { Metrics } from '@/features/metrics/types';
 
@@ -10,6 +11,8 @@ interface KpiEntry {
   label: string;
   value: string;
   tone?: KpiTone;
+  sub?: string;
+  fill?: number;
 }
 
 interface KpiGridProps {
@@ -20,54 +23,81 @@ interface KpiGridProps {
 export function KpiGrid({ metrics: m, currency }: KpiGridProps) {
   const [expanded, setExpanded] = useState(false);
 
+  // Win and loss sizes share one scale, so the two bars can be compared
+  // against each other instead of each filling its own tile.
+  const extreme = Math.max(m.avgWin, Math.abs(m.avgLoss)) || 1;
+
   const core: KpiEntry[] = [
-    { label: 'Net PnL', value: formatSignedCurrency(m.netPnl, currency), tone: signTone(m.netPnl) },
-    { label: 'Winrate', value: formatPercent(m.winrate) },
-    { label: 'Trades', value: String(m.tradeCount) },
-    { label: 'Ø Gewinn', value: formatCurrency(m.avgWin, currency), tone: m.avgWin > 0 ? 'profit' : 'default' },
+    { label: 'Winrate', value: formatPercent(m.winrate), fill: m.winrate },
+    {
+      label: 'Profit Factor',
+      value: num(m.profitFactor),
+      tone: m.profitFactor !== null ? (m.profitFactor >= 1 ? 'profit' : 'loss') : 'default',
+      sub: 'Gewinne / Verluste',
+    },
+    {
+      label: 'Ø Gewinn',
+      value: formatCurrency(m.avgWin, currency),
+      tone: m.avgWin > 0 ? 'profit' : 'default',
+      fill: m.avgWin / extreme,
+    },
+    {
+      label: 'Ø Verlust',
+      value: formatCurrency(m.avgLoss, currency),
+      tone: m.avgLoss < 0 ? 'loss' : 'default',
+      fill: Math.abs(m.avgLoss) / extreme,
+    },
   ];
 
   const advanced: KpiEntry[] = [
-    { label: 'Ø Verlust', value: formatCurrency(m.avgLoss, currency), tone: m.avgLoss < 0 ? 'loss' : 'default' },
-    { label: 'Profit Factor', value: num(m.profitFactor) },
     { label: 'Ø PnL/Trade', value: formatSignedCurrency(m.avgPnlPerTrade, currency), tone: signTone(m.avgPnlPerTrade) },
     { label: 'Payoff Ratio', value: num(m.payoffRatio) },
-    { label: 'Ø R-Multiple', value: m.avgR === null ? '—' : formatR(m.avgR) },
+    { label: 'Ø R-Multiple', value: m.avgR === null ? '—' : formatR(m.avgR), tone: m.avgR ? signTone(m.avgR) : 'default' },
     {
       label: 'Max Drawdown',
       value: m.maxDrawdown > 0 ? formatCurrency(-m.maxDrawdown, currency) : formatCurrency(0, currency),
       tone: m.maxDrawdown > 0 ? 'loss' : 'default',
     },
-    { label: 'Bester Trade', value: m.best === null ? '—' : formatSignedCurrency(m.best, currency), tone: m.best && m.best > 0 ? 'profit' : 'default' },
+    {
+      label: 'Bester Trade',
+      value: m.best === null ? '—' : formatSignedCurrency(m.best, currency),
+      tone: m.best && m.best > 0 ? 'profit' : 'default',
+    },
     {
       label: 'Schlechtester Trade',
       value: m.worst === null ? '—' : formatSignedCurrency(m.worst, currency),
       tone: m.worst && m.worst < 0 ? 'loss' : 'default',
     },
-    { label: 'Längste Serie (W / L)', value: `${m.longestWinStreak} / ${m.longestLossStreak}` },
+    { label: 'Trades', value: String(m.tradeCount) },
+    { label: 'Serie W / L', value: `${m.longestWinStreak} / ${m.longestLossStreak}` },
   ];
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        {core.map((c) => (
-          <KpiCard key={c.label} label={c.label} value={c.value} tone={c.tone} />
+      <div className="stagger grid grid-cols-2 gap-3 lg:grid-cols-4">
+        {core.map((c, i) => (
+          <KpiCard key={c.label} {...c} index={i} />
         ))}
       </div>
 
       <button
         type="button"
         onClick={() => setExpanded((v) => !v)}
-        className="flex w-fit items-center gap-1.5 text-sm text-text-muted hover:text-text"
+        aria-expanded={expanded}
+        className="flex w-fit items-center gap-1.5 rounded-md py-1 text-sm text-text-muted transition-colors hover:text-text"
       >
         <span>Erweiterte Statistiken</span>
-        <span>{expanded ? '▴' : '▾'}</span>
+        <ChevronDownIcon
+          width={15}
+          height={15}
+          className={`transition-transform duration-200 ease-out ${expanded ? 'rotate-180' : ''}`}
+        />
       </button>
 
       {expanded && (
-        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-          {advanced.map((c) => (
-            <KpiCard key={c.label} label={c.label} value={c.value} tone={c.tone} />
+        <div className="stagger grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
+          {advanced.map((c, i) => (
+            <KpiCard key={c.label} {...c} index={i} />
           ))}
         </div>
       )}

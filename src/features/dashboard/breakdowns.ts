@@ -13,6 +13,10 @@ export const BREAKDOWNS: BreakdownDescriptor[] = [
 ];
 
 // Palette hex mirrors the Tailwind profit/loss tokens (Recharts needs literals).
-export const PROFIT = '#4ADE9E';
-export const LOSS = '#F98080';
-export const AXIS = '#6E7079';
+export const PROFIT = '#3ED598';
+export const LOSS = '#F87171';
+export const AXIS = '#82858D';
+export const BRAND = '#8B85EA';
+export const GRID = '#1F212880';
+export const SURFACE = '#1B1E25';
+export const BORDER_STRONG = '#343741';

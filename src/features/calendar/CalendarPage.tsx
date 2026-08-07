@@ -6,8 +6,17 @@ import { useTrades } from '@/features/trades/useTrades';
 import { maxAbsPnl, monthGrid, pnlByDay, tradeCountByDay } from './calendarData';
 import { CalendarHeatmap } from './CalendarHeatmap';
 import { DayTradesPanel } from './DayTradesPanel';
-import { Button, Card, EmptyState, Spinner } from '@/components/ui';
-import { formatSignedCurrency } from '@/lib/format';
+import {
+  Button,
+  CalendarIcon,
+  ChevronLeftIcon,
+  ChevronRightIcon,
+  EmptyState,
+  Money,
+  SectionCard,
+  Spinner,
+} from '@/components/ui';
+import { PageHeader } from '@/components/layout/PageHeader';
 
 const MONTHS_DE = [
   'Januar', 'Februar', 'März', 'April', 'Mai', 'Juni',
@@ -56,6 +65,7 @@ export function CalendarPage() {
   if (!activeAccountId || !account) {
     return (
       <EmptyState
+        icon={<CalendarIcon />}
         title="Kein Konto gewählt"
         description="Wähle oben ein Konto oder lege unter Konten ein neues an."
         action={<Button onClick={() => navigate('/accounts')}>Zu den Konten</Button>}
@@ -73,28 +83,41 @@ export function CalendarPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-medium text-text">Kalender</h1>
-        <div className="flex items-center gap-2">
-          <button onClick={prev} aria-label="Vorheriger Monat" className="px-2 text-lg text-text-muted hover:text-text">
-            ‹
-          </button>
-          <span className="min-w-[9rem] text-center text-sm font-medium text-text">
-            {MONTHS_DE[month]} {year}
-          </span>
-          <button onClick={next} aria-label="Nächster Monat" className="px-2 text-lg text-text-muted hover:text-text">
-            ›
-          </button>
-        </div>
-      </div>
+      <PageHeader
+        title="Kalender"
+        subtitle="Farbe zeigt das Tagesergebnis, Punkte die Anzahl der Trades."
+        actions={
+          <div className="flex items-center gap-1 rounded-input border border-border bg-card p-1">
+            <button
+              onClick={prev}
+              aria-label="Vorheriger Monat"
+              className="flex h-8 w-8 items-center justify-center rounded-[7px] text-text-muted transition-colors hover:bg-border/60 hover:text-text"
+            >
+              <ChevronLeftIcon width={16} height={16} />
+            </button>
+            <span className="min-w-[9.5rem] text-center text-sm font-medium text-text">
+              {MONTHS_DE[month]} <span className="num text-text-muted">{year}</span>
+            </span>
+            <button
+              onClick={next}
+              aria-label="Nächster Monat"
+              className="flex h-8 w-8 items-center justify-center rounded-[7px] text-text-muted transition-colors hover:bg-border/60 hover:text-text"
+            >
+              <ChevronRightIcon width={16} height={16} />
+            </button>
+          </div>
+        }
+      />
 
-      <Card>
-        <div className="mb-4 flex justify-end text-sm">
-          <span className="text-text-muted">Monat:&nbsp;</span>
-          <span className={monthTotal > 0 ? 'text-profit' : monthTotal < 0 ? 'text-loss' : 'text-text-muted'}>
-            {formatSignedCurrency(monthTotal, currency)}
+      <SectionCard
+        title={`${MONTHS_DE[month]} ${year}`}
+        aside={
+          <span className="flex items-center gap-2 text-sm">
+            <span className="text-text-dim">Monat</span>
+            <Money value={monthTotal} currency={currency} signed className="font-medium" />
           </span>
-        </div>
+        }
+      >
         <CalendarHeatmap
           cells={cells}
           pnlMap={pnlMap}
@@ -104,7 +127,7 @@ export function CalendarPage() {
           selected={selected}
           onSelect={setSelected}
         />
-      </Card>
+      </SectionCard>
 
       {selected && (
         <DayTradesPanel day={selected} trades={dayTrades} currency={currency} onClose={() => setSelected(null)} />

@@ -8,7 +8,7 @@ interface InputProps extends InputHTMLAttributes<HTMLInputElement> {
 
 const fieldClass =
   'h-10 w-full rounded-input bg-bg border border-border px-3 text-sm text-text ' +
-  'placeholder:text-text-dim transition-colors focus:outline-none focus:border-accent ' +
+  'placeholder:text-text-dim transition-colors hover:border-border-strong focus:outline-none focus:border-brand focus:ring-0 ' +
   'disabled:opacity-50';
 
 export function Input({ label, error, className = '', id, ...rest }: InputProps) {

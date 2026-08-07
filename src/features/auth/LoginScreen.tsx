@@ -30,12 +30,17 @@ export function LoginScreen() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center px-4">
-      <div className="w-full max-w-sm">
+    <div className="relative flex min-h-dvh items-center justify-center overflow-hidden px-4">
+      {/* Quiet brand glow behind the card — the only decoration in the app. */}
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0 bg-[radial-gradient(50%_45%_at_50%_18%,rgba(139,133,234,0.13),transparent_70%)]"
+      />
+      <div className="relative w-full max-w-sm animate-rise-in">
         <div className="mb-8 text-center">
-          <img src={logo} alt="YP Trades" className="mx-auto mb-4 h-16 w-16 rounded-2xl" />
-          <h1 className="text-2xl font-medium text-text">YP Trades</h1>
-          <p className="mt-1 text-xs uppercase tracking-wide text-text-dim">Trading Journal</p>
+          <img src={logo} alt="" className="mx-auto mb-4 h-16 w-16 rounded-2xl ring-1 ring-border" />
+          <h1 className="text-2xl font-semibold tracking-tight text-text">YP Trades</h1>
+          <p className="mt-1 text-[11px] uppercase tracking-[0.22em] text-brand-bright">Trading Journal</p>
           <p className="mt-3 text-sm text-text-muted">Melde dich an, um fortzufahren.</p>
         </div>
         <Card>

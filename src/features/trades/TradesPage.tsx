@@ -8,7 +8,8 @@ import { TradeFilters } from './TradeFilters';
 import { TradesTable } from './TradesTable';
 import { useAccounts } from '@/features/accounts/useAccounts';
 import { useUiStore } from '@/store/uiStore';
-import { Button, EmptyState, Spinner } from '@/components/ui';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { Button, EmptyState, Money, Spinner, TradesIcon } from '@/components/ui';
 
 export function TradesPage() {
   const navigate = useNavigate();
@@ -28,9 +29,12 @@ export function TradesPage() {
 
   const newTrade = () => navigate('/trades/new', { state: { backgroundLocation: location } });
 
+  const netFiltered = filtered.reduce((s, t) => s + t.pnl, 0);
+
   if (!activeAccountId) {
     return (
       <EmptyState
+        icon={<TradesIcon />}
         title="Kein Konto gewählt"
         description="Wähle oben ein Konto oder lege unter Konten ein neues an."
         action={<Button onClick={() => navigate('/accounts')}>Zu den Konten</Button>}
@@ -40,9 +44,20 @@ export function TradesPage() {
 
   return (
     <div className="flex flex-col gap-5">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-medium text-text">Trades</h1>
-      </div>
+      <PageHeader
+        title="Trades"
+        subtitle={
+          <span className="flex items-center gap-2">
+            <span className="num">{filtered.length}</span> Trades in Ansicht
+            {filtered.length > 0 && (
+              <>
+                <span className="text-border-strong">·</span>
+                <Money value={netFiltered} currency={currency} signed className="text-sm font-medium" />
+              </>
+            )}
+          </span>
+        }
+      />
 
       <TradeFilters assets={assets} setups={setups ?? []} newsTags={newsTags ?? []} />
 

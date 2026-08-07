@@ -8,7 +8,17 @@ import { useCreateNewsTag, useNewsTags } from './useNewsTags';
 import { ImageUploader } from './ImageUploader';
 import { uploadImage } from '@/api/storage';
 import { addTradeImage } from '@/api/tradeImages';
-import { Button, Input, StarRating, Slider, TagPicker, Textarea, useToast } from '@/components/ui';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  Button,
+  Input,
+  StarRating,
+  Slider,
+  TagPicker,
+  Textarea,
+  useToast,
+} from '@/components/ui';
 import type { Direction, NewTrade, Trade, UpdateTrade } from '@/types/db';
 
 const DEFAULT_ASSETS = ['MNQ', 'MES'];
@@ -146,23 +156,31 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
 
       <div className="flex flex-col gap-1.5">
         <span className="text-sm text-text-muted">Richtung</span>
+        {/* Not a Segmented control: this field is tri-state — clicking the
+            selected side clears it back to "no direction recorded". */}
         <div className="inline-flex rounded-input border border-border bg-bg p-1">
-          {(['long', 'short'] as Direction[]).map((d) => (
-            <button
-              key={d}
-              type="button"
-              onClick={() => setDirection((cur) => (cur === d ? null : d))}
-              className={`h-8 min-w-[5rem] rounded-[7px] px-4 text-sm font-medium capitalize transition-colors ${
-                direction !== d
-                  ? 'text-text-muted hover:text-text'
-                  : d === 'long'
-                    ? 'bg-profit/15 text-profit'
-                    : 'bg-loss/15 text-loss'
-              }`}
-            >
-              {d === 'long' ? 'Long' : 'Short'}
-            </button>
-          ))}
+          {(['long', 'short'] as Direction[]).map((d) => {
+            const on = direction === d;
+            const Icon = d === 'long' ? ArrowUpIcon : ArrowDownIcon;
+            return (
+              <button
+                key={d}
+                type="button"
+                aria-pressed={on}
+                onClick={() => setDirection((cur) => (cur === d ? null : d))}
+                className={`flex h-8 min-w-[5.5rem] items-center justify-center gap-1.5 rounded-[7px] px-4 text-sm font-medium transition-all duration-200 ${
+                  !on
+                    ? 'text-text-muted hover:text-text'
+                    : d === 'long'
+                      ? 'bg-profit/15 text-profit ring-1 ring-inset ring-profit/40'
+                      : 'bg-loss/15 text-loss ring-1 ring-inset ring-loss/40'
+                }`}
+              >
+                <Icon width={14} height={14} />
+                {d === 'long' ? 'Long' : 'Short'}
+              </button>
+            );
+          })}
         </div>
       </div>
 

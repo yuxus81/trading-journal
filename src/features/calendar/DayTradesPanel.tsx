@@ -1,11 +1,11 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
-import { InstrumentBadge, Tag } from '@/components/ui';
+import { CloseIcon, InstrumentBadge, Money, Tag } from '@/components/ui';
 import { useSetups } from '@/features/trades/useSetups';
 import { useTradeImages } from '@/features/trades/useTrades';
 import { useSignedUrls } from '@/features/trades/useSignedUrls';
-import { formatCurrency, formatDate, formatSignedCurrency } from '@/lib/format';
+import { formatDate, formatSignedCurrency } from '@/lib/format';
 import type { Trade } from '@/types/db';
 
 function TradeThumb({ tradeId }: { tradeId: string }) {
@@ -45,7 +45,7 @@ export function DayTradesPanel({ day, trades, currency, onClose }: DayTradesPane
 
   return createPortal(
     <div className="fixed inset-0 z-50">
-      <div className="fixed inset-0 animate-fade-in bg-black/60" onClick={onClose} aria-hidden />
+      <div className="fixed inset-0 animate-fade-in bg-black/65 backdrop-blur-[2px]" onClick={onClose} aria-hidden />
       <div
         role="dialog"
         aria-modal="true"
@@ -59,8 +59,12 @@ export function DayTradesPanel({ day, trades, currency, onClose }: DayTradesPane
               {formatSignedCurrency(total, currency)}
             </span>
           </div>
-          <button onClick={onClose} aria-label="Schließen" className="text-text-dim transition-colors hover:text-text">
-            ✕
+          <button
+            onClick={onClose}
+            aria-label="Schließen"
+            className="rounded-md p-1 text-text-dim transition-colors hover:bg-border/60 hover:text-text"
+          >
+            <CloseIcon width={18} height={18} />
           </button>
         </div>
 
@@ -88,9 +92,7 @@ export function DayTradesPanel({ day, trades, currency, onClose }: DayTradesPane
                       {t.setup && <Tag label={t.setup} color={setupColor(t.setup)} />}
                     </div>
                   </div>
-                  <span className={`shrink-0 text-sm font-medium ${t.pnl > 0 ? 'text-profit' : t.pnl < 0 ? 'text-loss' : 'text-text-muted'}`}>
-                    {formatCurrency(t.pnl, currency)}
-                  </span>
+                  <Money value={t.pnl} currency={currency} className="shrink-0 text-sm font-medium" />
                 </button>
               ))}
             </div>

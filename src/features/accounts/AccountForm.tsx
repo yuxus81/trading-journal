@@ -1,14 +1,15 @@
 import { useState, type FormEvent } from 'react';
-import { Button, Input, Modal, Select } from '@/components/ui';
+import { Button, Input, Modal, Select, swatchClass } from '@/components/ui';
+import { ACCOUNT_TYPES, ACCOUNT_TYPE_COLOR, ACCOUNT_TYPE_LABEL } from './accountMeta';
 import type { Account, AccountType, NewAccount } from '@/types/db';
 
-const typeOptions = [
-  { value: 'backtest', label: 'Backtest' },
-  { value: 'demo', label: 'Demo' },
-  { value: 'eval', label: 'Eval' },
-  { value: 'funded', label: 'Funded' },
-  { value: 'live', label: 'Live' },
-];
+// The dot in the list is the same colour the account will carry everywhere
+// else, so the choice is made against the real thing.
+const typeOptions = ACCOUNT_TYPES.map((t) => ({
+  value: t,
+  label: ACCOUNT_TYPE_LABEL[t],
+  dotClass: swatchClass(ACCOUNT_TYPE_COLOR[t]),
+}));
 
 const currencyOptions = [
   { value: 'USD', label: 'USD ($)' },

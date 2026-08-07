@@ -6,11 +6,14 @@ import { useTrades } from '@/features/trades/useTrades';
 import { filterTrades } from '@/features/trades/filterTrades';
 import { TradeFilters } from '@/features/trades/TradeFilters';
 import { computeMetrics } from '@/features/metrics/calc';
+import { ACCOUNT_TYPE_LABEL } from '@/features/accounts/accountMeta';
+import { PageHeader } from '@/components/layout/PageHeader';
+import { HeroStats } from './HeroStats';
 import { KpiGrid } from './KpiGrid';
 import { EquityChart } from './EquityChart';
 import { SetupBreakdown } from './SetupBreakdown';
 import { RatingBreakdown } from './RatingBreakdown';
-import { Button, Card, EmptyState, Spinner } from '@/components/ui';
+import { Button, DashboardIcon, EmptyState, Money, SectionCard, Spinner } from '@/components/ui';
 
 export function DashboardPage() {
   const navigate = useNavigate();
@@ -28,6 +31,7 @@ export function DashboardPage() {
   if (!activeAccountId || !account) {
     return (
       <EmptyState
+        icon={<DashboardIcon />}
         title="Kein Konto gewählt"
         description="Wähle oben ein Konto oder lege unter Konten ein neues an."
         action={<Button onClick={() => navigate('/accounts')}>Zu den Konten</Button>}
@@ -47,14 +51,22 @@ export function DashboardPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-medium text-text">Dashboard</h1>
-      </div>
+      <PageHeader
+        title="Dashboard"
+        subtitle={
+          <>
+            {account.name} · {ACCOUNT_TYPE_LABEL[account.account_type]} ·{' '}
+            <span className="num">{filtered.length}</span> von <span className="num">{trades?.length ?? 0}</span>{' '}
+            Trades
+          </>
+        }
+      />
 
       {hasTrades && <TradeFilters assets={[]} setups={[]} newsTags={[]} compact />}
 
       {!hasTrades ? (
         <EmptyState
+          icon={<DashboardIcon />}
           title="Noch keine Trades"
           description="Trage deinen ersten Trade ein, um Kennzahlen und Charts zu sehen."
           action={<Button onClick={() => navigate('/trades')}>Zu den Trades</Button>}
@@ -63,22 +75,23 @@ export function DashboardPage() {
         <EmptyState title="Keine Treffer" description="Passe die Filter an, um Kennzahlen zu sehen." />
       ) : (
         <>
+          <HeroStats metrics={metrics} currency={currency} />
           <KpiGrid metrics={metrics} currency={currency} />
 
-          <Card>
-            <h2 className="mb-4 font-medium text-text">Equity-Kurve</h2>
+          <SectionCard
+            title="Equity-Kurve"
+            aside={<Money value={metrics.netPnl} currency={currency} signed className="text-sm font-medium" />}
+          >
             <EquityChart data={metrics.equityCurve} currency={currency} />
-          </Card>
+          </SectionCard>
 
           <div className="grid gap-4 lg:grid-cols-2">
-            <Card>
-              <h2 className="mb-4 font-medium text-text">Nach Setup</h2>
+            <SectionCard title="Nach Setup">
               <SetupBreakdown data={metrics.bySetup} currency={currency} />
-            </Card>
-            <Card>
-              <h2 className="mb-4 font-medium text-text">Nach Rating</h2>
+            </SectionCard>
+            <SectionCard title="Nach Rating">
               <RatingBreakdown data={metrics.byRating} currency={currency} />
-            </Card>
+            </SectionCard>
           </div>
         </>
       )}

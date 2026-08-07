@@ -3,7 +3,8 @@ import { useAccounts, useCreateAccount, useDeleteAccount, useUpdateAccount } fro
 import { useUiStore } from '@/store/uiStore';
 import { AccountCard } from './AccountCard';
 import { AccountForm } from './AccountForm';
-import { Button, ConfirmDialog, EmptyState, Spinner, useToast } from '@/components/ui';
+import { AccountsIcon, Button, ConfirmDialog, EmptyState, PlusIcon, Spinner, useToast } from '@/components/ui';
+import { PageHeader } from '@/components/layout/PageHeader';
 import type { Account, NewAccount } from '@/types/db';
 
 export function AccountsPage() {
@@ -72,10 +73,24 @@ export function AccountsPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between">
-        <h1 className="text-xl font-medium text-text">Konten</h1>
-        {accounts && accounts.length > 0 && <Button onClick={openNew}>+ Neues Konto</Button>}
-      </div>
+      <PageHeader
+        title="Konten"
+        subtitle={
+          accounts && accounts.length > 0 ? (
+            <>
+              <span className="num">{accounts.length}</span> Konten · das aktive Konto speist alle Kennzahlen
+            </>
+          ) : undefined
+        }
+        actions={
+          accounts && accounts.length > 0 ? (
+            <Button onClick={openNew}>
+              <PlusIcon width={16} height={16} />
+              Neues Konto
+            </Button>
+          ) : undefined
+        }
+      />
 
       {isLoading ? (
         <div className="flex justify-center py-16">
@@ -83,15 +98,17 @@ export function AccountsPage() {
         </div>
       ) : !accounts || accounts.length === 0 ? (
         <EmptyState
+          icon={<AccountsIcon />}
           title="Noch kein Konto"
           description="Lege dein erstes Konto an, um Trades und Kennzahlen zu erfassen."
-          action={<Button onClick={openNew}>+ Konto anlegen</Button>}
+          action={<Button onClick={openNew}><PlusIcon width={16} height={16} />Konto anlegen</Button>}
         />
       ) : (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-          {accounts.map((a) => (
+        <div className="stagger grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {accounts.map((a, i) => (
             <AccountCard
               key={a.id}
+              index={i}
               account={a}
               active={a.id === activeAccountId}
               onSelect={() => setActiveAccount(a.id)}

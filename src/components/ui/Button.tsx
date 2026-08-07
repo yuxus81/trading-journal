@@ -1,6 +1,6 @@
 import type { ButtonHTMLAttributes, ReactNode } from 'react';
 
-type Variant = 'primary' | 'ghost' | 'danger';
+type Variant = 'primary' | 'brand' | 'ghost' | 'outline' | 'danger';
 type Size = 'sm' | 'md';
 
 interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
@@ -10,14 +10,16 @@ interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
 }
 
 const base =
-  'inline-flex items-center justify-center gap-2 rounded-input font-medium transition-colors ' +
-  'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent/50 ' +
-  'disabled:opacity-50 disabled:pointer-events-none';
+  'inline-flex items-center justify-center gap-2 rounded-input font-medium ' +
+  'transition-[background-color,color,border-color,transform,box-shadow] duration-150 ease-out ' +
+  'active:scale-[0.97] disabled:opacity-50 disabled:pointer-events-none';
 
 const variants: Record<Variant, string> = {
-  primary: 'bg-accent text-accent-ink hover:bg-accent/90',
+  primary: 'bg-accent text-accent-ink hover:bg-white shadow-lift',
+  brand: 'bg-brand text-accent-ink hover:bg-brand-bright',
   ghost: 'bg-transparent text-text-muted hover:bg-border/60 hover:text-text',
-  danger: 'bg-transparent text-loss hover:bg-loss/10',
+  outline: 'border border-border bg-transparent text-text-muted hover:border-border-strong hover:text-text',
+  danger: 'bg-transparent text-loss hover:bg-loss/12',
 };
 
 const sizes: Record<Size, string> = {

@@ -1,10 +1,11 @@
 export { Button } from './Button';
-export { Card } from './Card';
+export { Card, SectionCard } from './Card';
 export { Input } from './Input';
 export { Select } from './Select';
 export type { SelectOption } from './Select';
 export { Textarea } from './Textarea';
-export { Toggle } from './Toggle';
+export { Segmented } from './Segmented';
+export type { SegmentOption, SegmentTone } from './Segmented';
 export { Spinner } from './Spinner';
 export { EmptyState } from './EmptyState';
 export { Modal } from './Modal';
@@ -20,3 +21,8 @@ export { Tag, TAG_COLOR_LIST, tagPillClass, gradientBadgeClass, swatchClass } fr
 export type { TagColor } from './Tag';
 export { TagPicker } from './TagPicker';
 export { InstrumentBadge } from './InstrumentBadge';
+export { StatusBadge, StatusDot } from './Status';
+export type { StatusTone } from './Status';
+export { Money, pnlToneClass } from './Money';
+export { Sparkline } from './Sparkline';
+export * from './icons';

@@ -12,4 +12,62 @@
     @apply bg-bg text-text font-sans antialiased;
     font-weight: 400;
   }
+
+  /* Every number in the app is read in a column next to another number, so
+     digits must not change width when the value changes. */
+  .num {
+    @apply font-mono;
+    font-variant-numeric: tabular-nums;
+    font-feature-settings: 'tnum' 1;
+    letter-spacing: -0.01em;
+  }
+
+  ::selection {
+    background: theme('colors.brand.DEFAULT');
+    color: #0d0e11;
+  }
+
+  /* Scrollbars in the app chrome, not the OS default light ones. */
+  * {
+    scrollbar-color: theme('colors.border.strong') transparent;
+    scrollbar-width: thin;
+  }
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-thumb {
+    background: theme('colors.border.strong');
+    border: 3px solid transparent;
+    background-clip: content-box;
+    border-radius: 999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: theme('colors.text.dim');
+    background-clip: content-box;
+  }
+
+  /* A visible, on-brand focus ring — never removed, only styled. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand/70 ring-offset-2 ring-offset-bg;
+  }
+}
+
+@layer utilities {
+  /* Entrance stagger for grids and lists: set --i on each child. */
+  .stagger > * {
+    animation-delay: calc(var(--i, 0) * 40ms);
+  }
+}
+
+/* Motion is meaning here, not decoration — but it is still optional. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

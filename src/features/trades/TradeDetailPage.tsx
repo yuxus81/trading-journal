@@ -6,15 +6,28 @@ import { useNewsTags } from './useNewsTags';
 import { TradeImageGallery } from './TradeImageGallery';
 import { useAccounts } from '@/features/accounts/useAccounts';
 import { removeImages } from '@/api/storage';
-import { Button, Card, ConfirmDialog, EmptyState, InstrumentBadge, Spinner, StarRating, Tag, useToast } from '@/components/ui';
+import {
+  ArrowDownIcon,
+  ArrowUpIcon,
+  Button,
+  ChevronLeftIcon,
+  ConfirmDialog,
+  EmptyState,
+  InstrumentBadge,
+  SectionCard,
+  Spinner,
+  StarRating,
+  Tag,
+  useToast,
+} from '@/components/ui';
 import { formatSignedCurrency, formatDate } from '@/lib/format';
 import type { ReactNode } from 'react';
 
 function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
     <div>
-      <div className="text-xs text-text-dim">{label}</div>
-      <div className="mt-1 text-sm text-text">{children}</div>
+      <div className="text-[10px] font-semibold uppercase tracking-[0.1em] text-text-dim">{label}</div>
+      <div className="mt-1.5 text-sm text-text">{children}</div>
     </div>
   );
 }
@@ -50,7 +63,8 @@ export function TradeDetailPage() {
 
   const account = accounts?.find((a) => a.id === trade.account_id);
   const currency = account?.currency ?? 'USD';
-  const pnlColor = trade.pnl > 0 ? 'text-profit' : trade.pnl < 0 ? 'text-loss' : 'text-text-muted';
+  const win = trade.pnl > 0;
+  const flat = trade.pnl === 0;
 
   const onEdit = () => navigate(`/trades/${trade.id}/edit`, { state: { backgroundLocation: location } });
 
@@ -67,21 +81,25 @@ export function TradeDetailPage() {
 
   return (
     <div className="flex flex-col gap-6">
-      <div className="flex items-center justify-between gap-3">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <Link to="/trades" className="text-sm text-text-dim hover:text-text">
-            ← Trades
+          <Link
+            to="/trades"
+            className="inline-flex items-center gap-1 text-sm text-text-dim transition-colors hover:text-text"
+          >
+            <ChevronLeftIcon width={15} height={15} />
+            Trades
           </Link>
-          <div className="mt-1 flex items-center gap-2">
+          <div className="mt-2 flex items-center gap-2">
             <InstrumentBadge asset={trade.asset} />
-            <h1 className="text-xl font-medium text-text">
+            <h1 className="num text-xl font-semibold text-text">
               {formatDate(trade.trade_date)}
               {trade.exec_time && <span className="text-text-muted"> · {trade.exec_time.slice(0, 5)}</span>}
             </h1>
           </div>
         </div>
         <div className="flex gap-2">
-          <Button variant="ghost" onClick={onEdit}>
+          <Button variant="outline" onClick={onEdit}>
             Bearbeiten
           </Button>
           <Button variant="danger" onClick={() => setConfirm(true)}>
@@ -90,46 +108,87 @@ export function TradeDetailPage() {
         </div>
       </div>
 
-      <Card>
-        <div className="text-xs text-text-dim">PnL</div>
-        <div className={`text-3xl font-medium ${pnlColor}`}>{formatSignedCurrency(trade.pnl, currency)}</div>
-        <div className="mt-5 grid grid-cols-2 gap-5 sm:grid-cols-4">
-          <Field label="Richtung">
-            {trade.direction === 'long' ? 'Long' : trade.direction === 'short' ? 'Short' : '—'}
-          </Field>
-          <Field label="R-Multiple">{trade.r_multiple != null ? `${trade.r_multiple}R` : '—'}</Field>
-          <Field label="Setup">
-            {trade.setup ? <Tag label={trade.setup} color={setups?.find((s) => s.name === trade.setup)?.color} /> : '—'}
-          </Field>
-          <Field label="Confidence">{trade.confidence != null ? `${trade.confidence}/10` : '—'}</Field>
-          <Field label="Bewertung">
-            {trade.rating ? <StarRating value={trade.rating} readOnly size="sm" /> : '—'}
-          </Field>
-          <Field label="News des Tages">
-            {trade.news.length > 0 ? (
-              <div className="flex flex-wrap gap-1">
-                {trade.news.map((n) => (
-                  <Tag key={n} label={n} color={newsTags?.find((x) => x.name === n)?.color} />
-                ))}
-              </div>
-            ) : (
-              '—'
-            )}
-          </Field>
+      {/* The outcome banner: the trade's result is the headline, not a field. */}
+      <div className="relative animate-rise-in overflow-hidden rounded-card border border-border bg-card p-5">
+        <div
+          aria-hidden
+          className={`pointer-events-none absolute inset-0 ${
+            flat
+              ? ''
+              : win
+                ? 'bg-[radial-gradient(120%_100%_at_0%_0%,rgba(62,213,152,0.10),transparent_60%)]'
+                : 'bg-[radial-gradient(120%_100%_at_0%_0%,rgba(248,113,113,0.10),transparent_60%)]'
+          }`}
+        />
+        <div className="relative">
+          <div className="text-[10px] font-semibold uppercase tracking-[0.12em] text-text-dim">Ergebnis</div>
+          <div
+            className={`num mt-1 text-[2.2rem] font-semibold leading-none ${
+              flat ? 'text-text-muted' : win ? 'text-profit' : 'text-loss'
+            }`}
+          >
+            {formatSignedCurrency(trade.pnl, currency)}
+          </div>
+
+          <div className="mt-6 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-6">
+            <Field label="Richtung">
+              {trade.direction ? (
+                <span
+                  className={`inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium ${
+                    trade.direction === 'long' ? 'bg-profit/12 text-profit' : 'bg-loss/12 text-loss'
+                  }`}
+                >
+                  {trade.direction === 'long' ? (
+                    <ArrowUpIcon width={12} height={12} />
+                  ) : (
+                    <ArrowDownIcon width={12} height={12} />
+                  )}
+                  {trade.direction === 'long' ? 'Long' : 'Short'}
+                </span>
+              ) : (
+                '—'
+              )}
+            </Field>
+            <Field label="R-Multiple">
+              <span className="num">{trade.r_multiple != null ? `${trade.r_multiple}R` : '—'}</span>
+            </Field>
+            <Field label="Setup">
+              {trade.setup ? (
+                <Tag label={trade.setup} color={setups?.find((s) => s.name === trade.setup)?.color} />
+              ) : (
+                '—'
+              )}
+            </Field>
+            <Field label="Confidence">
+              <span className="num">{trade.confidence != null ? `${trade.confidence}/10` : '—'}</span>
+            </Field>
+            <Field label="Bewertung">
+              {trade.rating ? <StarRating value={trade.rating} readOnly size="sm" /> : '—'}
+            </Field>
+            <Field label="News des Tages">
+              {trade.news.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {trade.news.map((n) => (
+                    <Tag key={n} label={n} color={newsTags?.find((x) => x.name === n)?.color} />
+                  ))}
+                </div>
+              ) : (
+                '—'
+              )}
+            </Field>
+          </div>
         </div>
-      </Card>
+      </div>
 
       {trade.notes && (
-        <Card>
-          <div className="text-xs text-text-dim">Notizen</div>
-          <p className="mt-2 whitespace-pre-wrap text-sm leading-relaxed text-text">{trade.notes}</p>
-        </Card>
+        <SectionCard title="Notizen">
+          <p className="whitespace-pre-wrap text-sm leading-relaxed text-text">{trade.notes}</p>
+        </SectionCard>
       )}
 
-      <Card>
-        <div className="mb-3 text-xs text-text-dim">Screenshots</div>
+      <SectionCard title="Screenshots">
         <TradeImageGallery tradeId={trade.id} />
-      </Card>
+      </SectionCard>
 
       <ConfirmDialog
         open={confirm}
