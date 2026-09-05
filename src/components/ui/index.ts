@@ -3,6 +3,7 @@ export { Card, SectionCard } from './Card';
 export { Input } from './Input';
 export { Select } from './Select';
 export type { SelectOption } from './Select';
+export { Combobox } from './Combobox';
 export { Textarea } from './Textarea';
 export { Segmented } from './Segmented';
 export type { SegmentOption, SegmentTone } from './Segmented';

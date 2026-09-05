@@ -12,6 +12,7 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   Button,
+  Combobox,
   Input,
   StarRating,
   Slider,
@@ -124,14 +125,14 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
       className="flex flex-col gap-5"
     >
       <div className="grid grid-cols-2 gap-4">
-        <div className="flex flex-col gap-1.5">
-          <Input label="Asset" list="asset-suggestions" value={asset} onChange={(e) => setAsset(e.target.value)} placeholder="MNQ" required />
-          <datalist id="asset-suggestions">
-            {assetSuggestions.map((a) => (
-              <option key={a} value={a} />
-            ))}
-          </datalist>
-        </div>
+        <Combobox
+          label="Asset"
+          value={asset}
+          onChange={setAsset}
+          suggestions={assetSuggestions}
+          placeholder="MNQ"
+          required
+        />
         <Input label="PnL" type="number" inputMode="decimal" step="any" value={pnl} onChange={(e) => setPnl(e.target.value)} placeholder="z. B. 250 oder -85" required />
         <Input label="Datum" type="date" value={tradeDate} onChange={(e) => setTradeDate(e.target.value)} required />
         <Input label="Uhrzeit (optional)" type="time" value={execTime} onChange={(e) => setExecTime(e.target.value)} />

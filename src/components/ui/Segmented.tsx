@@ -53,7 +53,11 @@ export function Segmented<T extends string>({
     <div className="flex flex-col gap-1.5">
       {label && <span className="text-sm text-text-muted">{label}</span>}
       <div
-        className={`relative inline-flex rounded-input border border-border bg-bg p-1 ${className}`}
+        // `inline-grid` + `auto-cols-fr` makes every slot exactly equal even
+        // though the labels differ in width ("Alle" vs "Losses"); a flex row
+        // sized to content let the longest label overflow its third, so the
+        // sliding indicator no longer lined up under each label's centre.
+        className={`relative inline-grid grid-flow-col auto-cols-fr rounded-input border border-border bg-bg p-1 ${className}`}
         role="tablist"
       >
         <span
@@ -73,7 +77,7 @@ export function Segmented<T extends string>({
               role="tab"
               aria-selected={active}
               onClick={() => onChange(o.value)}
-              className={`${h} relative z-10 flex flex-1 items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] px-4 text-sm font-medium transition-colors duration-200 ${
+              className={`${h} relative z-10 flex items-center justify-center gap-1.5 whitespace-nowrap rounded-[7px] px-4 text-sm font-medium transition-colors duration-200 ${
                 active ? ACTIVE_TEXT[o.tone ?? 'default'] : 'text-text-muted hover:text-text'
               }`}
             >

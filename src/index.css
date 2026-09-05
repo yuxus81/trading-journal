@@ -13,6 +13,21 @@
     font-weight: 400;
   }
 
+  /* Native controls (date/time pickers, their calendar + spin indicators, the
+     autofill overlay) render in the OS' light chrome unless we opt the whole
+     document into a dark scheme. */
+  :root {
+    color-scheme: dark;
+  }
+  ::-webkit-calendar-picker-indicator {
+    cursor: pointer;
+    opacity: 0.55;
+    transition: opacity 0.15s ease;
+  }
+  ::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+  }
+
   /* Every number in the app is read in a column next to another number, so
      digits must not change width when the value changes. */
   .num {
