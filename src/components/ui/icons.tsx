@@ -202,3 +202,22 @@ export function TrendDownIcon(props: Props) {
     </svg>
   );
 }
+
+export function PencilIcon(props: Props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 20h4L18.5 9.5a2 2 0 0 0 0-2.83l-1.17-1.17a2 2 0 0 0-2.83 0L4 16v4z" />
+      <path d="M13.5 6.5l4 4" />
+    </svg>
+  );
+}
+
+export function TrashIcon(props: Props) {
+  return (
+    <svg {...base} {...props}>
+      <path d="M4 7h16M9 7V4.5A1.5 1.5 0 0 1 10.5 3h3A1.5 1.5 0 0 1 15 4.5V7" />
+      <path d="M6 7l1 12.5A1.5 1.5 0 0 0 8.5 21h7a1.5 1.5 0 0 0 1.5-1.5L18 7" />
+      <path d="M10 11v6M14 11v6" />
+    </svg>
+  );
+}

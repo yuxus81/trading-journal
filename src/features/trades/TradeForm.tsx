@@ -3,8 +3,8 @@ import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/useAuth';
 import { useUiStore } from '@/store/uiStore';
 import { useCreateTrade, useUpdateTrade, useTrades } from './useTrades';
-import { useCreateSetup, useSetups } from './useSetups';
-import { useCreateNewsTag, useNewsTags } from './useNewsTags';
+import { useCreateSetup, useDeleteSetup, useSetups, useUpdateSetup } from './useSetups';
+import { useCreateNewsTag, useDeleteNewsTag, useNewsTags, useUpdateNewsTag } from './useNewsTags';
 import { ImageUploader } from './ImageUploader';
 import { uploadImage } from '@/api/storage';
 import { addTradeImage } from '@/api/tradeImages';
@@ -41,8 +41,12 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
   const update = useUpdateTrade();
   const { data: setups } = useSetups();
   const createSetup = useCreateSetup();
+  const updateSetup = useUpdateSetup();
+  const deleteSetup = useDeleteSetup();
   const { data: newsTags } = useNewsTags();
   const createNewsTag = useCreateNewsTag();
+  const updateNewsTag = useUpdateNewsTag();
+  const deleteNewsTag = useDeleteNewsTag();
   const { data: trades } = useTrades(activeAccountId);
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -150,6 +154,11 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
         value={news}
         onChange={setNews}
         onCreate={(name, color) => createNewsTag.mutate({ name, color })}
+        onUpdate={(id, patch, prevName) => {
+          updateNewsTag.mutate({ id, ...patch, prevName });
+          setNews((cur) => cur.map((n) => (n === prevName ? patch.name : n)));
+        }}
+        onDelete={(id) => deleteNewsTag.mutate(id)}
         placeholder="z. B. CPI 14:30"
       />
 
@@ -194,6 +203,11 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
           value={setup ? [setup] : []}
           onChange={(names) => setSetup(names[0] ?? '')}
           onCreate={(name, color) => createSetup.mutate({ name, color })}
+          onUpdate={(id, patch, prevName) => {
+            updateSetup.mutate({ id, ...patch, prevName });
+            setSetup((cur) => (cur === prevName ? patch.name : cur));
+          }}
+          onDelete={(id) => deleteSetup.mutate(id)}
           placeholder="z. B. Breakout"
         />
       </div>

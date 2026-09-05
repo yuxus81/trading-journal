@@ -12,3 +12,17 @@ export async function createNewsTag(name: string, color: string): Promise<NewsTa
   if (error) throw error;
   return data as NewsTag;
 }
+
+export async function updateNewsTag(
+  id: string,
+  patch: { name?: string; color?: string },
+): Promise<NewsTag> {
+  const { data, error } = await supabase.from('news_tags').update(patch).eq('id', id).select().single();
+  if (error) throw error;
+  return data as NewsTag;
+}
+
+export async function deleteNewsTag(id: string): Promise<void> {
+  const { error } = await supabase.from('news_tags').delete().eq('id', id);
+  if (error) throw error;
+}

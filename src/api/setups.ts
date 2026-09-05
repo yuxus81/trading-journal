@@ -12,3 +12,17 @@ export async function createSetup(name: string, color: string): Promise<Setup> {
   if (error) throw error;
   return data as Setup;
 }
+
+export async function updateSetup(
+  id: string,
+  patch: { name?: string; color?: string },
+): Promise<Setup> {
+  const { data, error } = await supabase.from('setups').update(patch).eq('id', id).select().single();
+  if (error) throw error;
+  return data as Setup;
+}
+
+export async function deleteSetup(id: string): Promise<void> {
+  const { error } = await supabase.from('setups').delete().eq('id', id);
+  if (error) throw error;
+}

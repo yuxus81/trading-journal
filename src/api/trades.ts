@@ -45,3 +45,29 @@ export async function deleteTrade(id: string): Promise<void> {
   const { error } = await supabase.from('trades').delete().eq('id', id);
   if (error) throw error;
 }
+
+/**
+ * Trades store setup/news as name strings, not tag ids, so renaming a tag has
+ * to rewrite the history or old trades silently detach from it. Deleting a tag
+ * deliberately does NOT touch trades — the label stays on past entries (shown
+ * uncoloured, still filterable), it just disappears from the picker.
+ */
+export async function renameSetupOnTrades(oldName: string, newName: string): Promise<void> {
+  if (oldName === newName) return;
+  const { error } = await supabase.from('trades').update({ setup: newName }).eq('setup', oldName);
+  if (error) throw error;
+}
+
+export async function renameNewsOnTrades(oldName: string, newName: string): Promise<void> {
+  if (oldName === newName) return;
+  const { data, error } = await supabase
+    .from('trades')
+    .select('id, news')
+    .contains('news', [oldName]);
+  if (error) throw error;
+  for (const row of (data as Pick<Trade, 'id' | 'news'>[]) ?? []) {
+    const next = Array.from(new Set(row.news.map((n) => (n === oldName ? newName : n))));
+    const { error: upErr } = await supabase.from('trades').update({ news: next }).eq('id', row.id);
+    if (upErr) throw upErr;
+  }
+}
