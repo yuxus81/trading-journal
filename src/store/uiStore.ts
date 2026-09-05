@@ -8,6 +8,7 @@ export interface TradeFilters {
   setup: string | null;
   asset: string | null;
   news: string[];
+  weekEvents: string[];
   timeFrom: string | null;
   timeTo: string | null;
 }
@@ -17,6 +18,7 @@ const emptyFilters: TradeFilters = {
   setup: null,
   asset: null,
   news: [],
+  weekEvents: [],
   timeFrom: null,
   timeTo: null,
 };

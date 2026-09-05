@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useUiStore, type ResultFilter } from '@/store/uiStore';
 import { Button, ChevronDownIcon, FilterIcon, Input, InstrumentBadge, Segmented, Tag } from '@/components/ui';
 import type { SegmentOption } from '@/components/ui';
-import type { NewsTag, Setup } from '@/types/db';
+import type { NewsTag, Setup, WeekEvent } from '@/types/db';
 
 // The result filter is the one place where win/loss colour belongs in a
 // control: the switch adopts the colour of the outcome it is showing.
@@ -16,10 +16,17 @@ interface TradeFiltersProps {
   assets: string[];
   setups: Setup[];
   newsTags: NewsTag[];
+  weekEventTags: WeekEvent[];
   compact?: boolean;
 }
 
-export function TradeFilters({ assets, setups, newsTags, compact = false }: TradeFiltersProps) {
+export function TradeFilters({
+  assets,
+  setups,
+  newsTags,
+  weekEventTags,
+  compact = false,
+}: TradeFiltersProps) {
   const filters = useUiStore((s) => s.tradeFilters);
   const setTradeFilters = useUiStore((s) => s.setTradeFilters);
   const resetFilters = useUiStore((s) => s.resetFilters);
@@ -29,11 +36,20 @@ export function TradeFilters({ assets, setups, newsTags, compact = false }: Trad
     (filters.setup ? 1 : 0) +
     (filters.asset ? 1 : 0) +
     filters.news.length +
+    filters.weekEvents.length +
     (filters.timeFrom || filters.timeTo ? 1 : 0);
 
   const toggleNews = (name: string) => {
     setTradeFilters({
       news: filters.news.includes(name) ? filters.news.filter((n) => n !== name) : [...filters.news, name],
+    });
+  };
+
+  const toggleWeekEvent = (name: string) => {
+    setTradeFilters({
+      weekEvents: filters.weekEvents.includes(name)
+        ? filters.weekEvents.filter((n) => n !== name)
+        : [...filters.weekEvents, name],
     });
   };
 
@@ -112,6 +128,20 @@ export function TradeFilters({ assets, setups, newsTags, compact = false }: Trad
                   key={n.name}
                   selected={filters.news.includes(n.name)}
                   onClick={() => toggleNews(n.name)}
+                >
+                  <Tag label={n.name} color={n.color} />
+                </FilterChip>
+              ))}
+            </FilterRow>
+          )}
+
+          {weekEventTags.length > 0 && (
+            <FilterRow title="Wochen-Events">
+              {weekEventTags.map((n) => (
+                <FilterChip
+                  key={n.name}
+                  selected={filters.weekEvents.includes(n.name)}
+                  onClick={() => toggleWeekEvent(n.name)}
                 >
                   <Tag label={n.name} color={n.color} />
                 </FilterChip>

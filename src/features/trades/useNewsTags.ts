@@ -32,7 +32,9 @@ export function useUpdateNewsTag() {
       if (name !== prevName) await renameNewsOnTrades(prevName, name);
       return tag;
     },
-    onSuccess: () => {
+    // onSettled, not onSuccess: the tag row is written first, so the list must
+    // refresh even if the trade-history rewrite that follows it throws.
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ['newsTags'] });
       qc.invalidateQueries({ queryKey: ['trades'] });
       qc.invalidateQueries({ queryKey: ['trade'] });

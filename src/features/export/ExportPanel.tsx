@@ -7,7 +7,7 @@ import type { Trade } from '@/types/db';
 
 const TRADE_COLUMNS = [
   'id', 'account_id', 'asset', 'trade_date', 'exec_time', 'pnl', 'rating', 'direction',
-  'r_multiple', 'setup', 'confidence', 'news', 'notes', 'created_at',
+  'r_multiple', 'setup', 'confidence', 'news', 'week_events', 'notes', 'created_at',
 ];
 const ACCOUNT_COLUMNS = ['id', 'name', 'account_type', 'starting_capital', 'currency', 'created_at'];
 
@@ -35,7 +35,11 @@ export function ExportPanel({ open, onClose }: ExportPanelProps) {
     try {
       if (trades) {
         const rows = await listAllTrades();
-        const flat = rows.map((t: Trade) => ({ ...t, news: t.news.join('; ') }));
+        const flat = rows.map((t: Trade) => ({
+          ...t,
+          news: t.news.join('; '),
+          week_events: t.week_events.join('; '),
+        }));
         downloadCsv(`trades-${stamp()}.csv`, toCsv(flat, TRADE_COLUMNS));
       }
       if (accounts) {

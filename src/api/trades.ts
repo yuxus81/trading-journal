@@ -10,7 +10,7 @@ export async function listTrades(accountId: string): Promise<Trade[]> {
     .order('exec_time', { ascending: false, nullsFirst: false })
     .order('created_at', { ascending: false });
   if (error) throw error;
-  return data as Trade[];
+  return (data ?? []).map(normalizeTrade);
 }
 
 /** All trades across every account (RLS-scoped to the user). Used by CSV backup. */
@@ -20,25 +20,31 @@ export async function listAllTrades(): Promise<Trade[]> {
     .select('*')
     .order('trade_date', { ascending: true });
   if (error) throw error;
-  return data as Trade[];
+  return (data ?? []).map(normalizeTrade);
 }
 
 export async function getTrade(id: string): Promise<Trade> {
   const { data, error } = await supabase.from('trades').select('*').eq('id', id).single();
   if (error) throw error;
-  return data as Trade;
+  return normalizeTrade(data);
 }
 
 export async function createTrade(t: NewTrade): Promise<Trade> {
-  const { data, error } = await supabase.from('trades').insert(t).select().single();
-  if (error) throw error;
-  return data as Trade;
+  let res = await supabase.from('trades').insert(t).select().single();
+  if (res.error && isMissingWeekEvents(res.error)) {
+    res = await supabase.from('trades').insert(stripWeekEvents(t)).select().single();
+  }
+  if (res.error) throw res.error;
+  return normalizeTrade(res.data);
 }
 
 export async function updateTrade(id: string, patch: UpdateTrade): Promise<Trade> {
-  const { data, error } = await supabase.from('trades').update(patch).eq('id', id).select().single();
-  if (error) throw error;
-  return data as Trade;
+  let res = await supabase.from('trades').update(patch).eq('id', id).select().single();
+  if (res.error && isMissingWeekEvents(res.error)) {
+    res = await supabase.from('trades').update(stripWeekEvents(patch)).eq('id', id).select().single();
+  }
+  if (res.error) throw res.error;
+  return normalizeTrade(res.data);
 }
 
 export async function deleteTrade(id: string): Promise<void> {
@@ -47,10 +53,14 @@ export async function deleteTrade(id: string): Promise<void> {
 }
 
 /**
- * Trades store setup/news as name strings, not tag ids, so renaming a tag has
- * to rewrite the history or old trades silently detach from it. Deleting a tag
- * deliberately does NOT touch trades — the label stays on past entries (shown
- * uncoloured, still filterable), it just disappears from the picker.
+ * Trades store setup / news / week-event tags as name strings, not tag ids, so
+ * renaming a tag has to rewrite the history or old trades silently detach from
+ * it. Deleting a tag deliberately does NOT touch trades — the label stays on
+ * past entries (still filterable), it just leaves the picker.
+ *
+ * `news` / `week_events` are jsonb columns; PostgREST's `contains` filter turns
+ * a JS array into a Postgres array literal (`cs.{…}`) that a jsonb column
+ * rejects, so the match is done client-side rather than as a query.
  */
 export async function renameSetupOnTrades(oldName: string, newName: string): Promise<void> {
   if (oldName === newName) return;
@@ -59,15 +69,40 @@ export async function renameSetupOnTrades(oldName: string, newName: string): Pro
 }
 
 export async function renameNewsOnTrades(oldName: string, newName: string): Promise<void> {
+  await renameJsonbTag('news', oldName, newName);
+}
+
+export async function renameWeekEventOnTrades(oldName: string, newName: string): Promise<void> {
+  await renameJsonbTag('week_events', oldName, newName);
+}
+
+async function renameJsonbTag(
+  column: 'news' | 'week_events',
+  oldName: string,
+  newName: string,
+): Promise<void> {
   if (oldName === newName) return;
-  const { data, error } = await supabase
-    .from('trades')
-    .select('id, news')
-    .contains('news', [oldName]);
-  if (error) throw error;
-  for (const row of (data as Pick<Trade, 'id' | 'news'>[]) ?? []) {
-    const next = Array.from(new Set(row.news.map((n) => (n === oldName ? newName : n))));
-    const { error: upErr } = await supabase.from('trades').update({ news: next }).eq('id', row.id);
-    if (upErr) throw upErr;
+  const affected = (await listAllTrades()).filter((t) => t[column].includes(oldName));
+  for (const t of affected) {
+    const next = Array.from(new Set(t[column].map((n) => (n === oldName ? newName : n))));
+    const { error } = await supabase.from('trades').update({ [column]: next }).eq('id', t.id);
+    if (error) throw error;
   }
+}
+
+/** jsonb array columns can be missing (pre-migration) or null — always hand the app an array. */
+function normalizeTrade(row: unknown): Trade {
+  const t = row as Trade;
+  return { ...t, news: t.news ?? [], week_events: t.week_events ?? [] };
+}
+
+function stripWeekEvents<T extends object>(payload: T): T {
+  const clone = { ...(payload as Record<string, unknown>) };
+  delete clone.week_events;
+  return clone as T;
+}
+
+function isMissingWeekEvents(err: { code?: string; message?: string }): boolean {
+  const msg = err.message ?? '';
+  return (err.code === 'PGRST204' || /week_events/i.test(msg)) && /column|schema cache/i.test(msg);
 }

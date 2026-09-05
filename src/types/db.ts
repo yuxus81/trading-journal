@@ -21,6 +21,7 @@ export interface Trade {
   pnl: number;
   rating: number | null;
   news: string[];
+  week_events: string[];
   direction: Direction | null;
   r_multiple: number | null;
   setup: string | null;
@@ -45,6 +46,15 @@ export interface Setup {
 }
 
 export interface NewsTag {
+  id: string;
+  user_id: string;
+  name: string;
+  color: string;
+  created_at: string;
+}
+
+/** Reusable coloured tag for recurring weekly events (CPI week, NFP week, …). */
+export interface WeekEvent {
   id: string;
   user_id: string;
   name: string;

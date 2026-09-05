@@ -32,7 +32,7 @@ export function useUpdateSetup() {
       if (name !== prevName) await renameSetupOnTrades(prevName, name);
       return setup;
     },
-    onSuccess: () => {
+    onSettled: () => {
       qc.invalidateQueries({ queryKey: ['setups'] });
       qc.invalidateQueries({ queryKey: ['trades'] });
       qc.invalidateQueries({ queryKey: ['trade'] });

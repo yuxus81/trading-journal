@@ -25,6 +25,7 @@ function t(p: Partial<Trade>): Trade {
     pnl: 0,
     rating: null,
     news: [],
+    week_events: [],
     direction: null,
     r_multiple: null,
     setup: null,

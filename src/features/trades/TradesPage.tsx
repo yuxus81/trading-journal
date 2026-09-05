@@ -3,6 +3,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { useTrades } from './useTrades';
 import { useSetups } from './useSetups';
 import { useNewsTags } from './useNewsTags';
+import { useWeekEvents } from './useWeekEvents';
 import { filterTrades } from './filterTrades';
 import { TradeFilters } from './TradeFilters';
 import { TradesTable } from './TradesTable';
@@ -20,6 +21,7 @@ export function TradesPage() {
   const { data: trades, isLoading } = useTrades(activeAccountId);
   const { data: setups } = useSetups();
   const { data: newsTags } = useNewsTags();
+  const { data: weekEventTags } = useWeekEvents();
 
   const account = accounts?.find((a) => a.id === activeAccountId) ?? null;
   const currency = account?.currency ?? 'USD';
@@ -59,7 +61,12 @@ export function TradesPage() {
         }
       />
 
-      <TradeFilters assets={assets} setups={setups ?? []} newsTags={newsTags ?? []} />
+      <TradeFilters
+        assets={assets}
+        setups={setups ?? []}
+        newsTags={newsTags ?? []}
+        weekEventTags={weekEventTags ?? []}
+      />
 
       {isLoading ? (
         <div className="flex justify-center py-16">

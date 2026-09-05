@@ -9,6 +9,8 @@ export function filterTrades(trades: Trade[], f: TradeFilters): Trade[] {
     if (f.setup && t.setup !== f.setup) return false;
     if (f.asset && t.asset !== f.asset) return false;
     if (f.news.length > 0 && !f.news.some((n) => t.news.includes(n))) return false;
+    if (f.weekEvents.length > 0 && !f.weekEvents.some((n) => (t.week_events ?? []).includes(n)))
+      return false;
     const time = t.exec_time?.slice(0, 5);
     if (f.timeFrom && (!time || time < f.timeFrom)) return false;
     if (f.timeTo && (!time || time > f.timeTo)) return false;

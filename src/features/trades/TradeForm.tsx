@@ -5,6 +5,12 @@ import { useUiStore } from '@/store/uiStore';
 import { useCreateTrade, useUpdateTrade, useTrades } from './useTrades';
 import { useCreateSetup, useDeleteSetup, useSetups, useUpdateSetup } from './useSetups';
 import { useCreateNewsTag, useDeleteNewsTag, useNewsTags, useUpdateNewsTag } from './useNewsTags';
+import {
+  useCreateWeekEvent,
+  useDeleteWeekEvent,
+  useUpdateWeekEvent,
+  useWeekEvents,
+} from './useWeekEvents';
 import { ImageUploader } from './ImageUploader';
 import { uploadImage } from '@/api/storage';
 import { addTradeImage } from '@/api/tradeImages';
@@ -47,6 +53,10 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
   const createNewsTag = useCreateNewsTag();
   const updateNewsTag = useUpdateNewsTag();
   const deleteNewsTag = useDeleteNewsTag();
+  const { data: weekEventTags } = useWeekEvents();
+  const createWeekEvent = useCreateWeekEvent();
+  const updateWeekEvent = useUpdateWeekEvent();
+  const deleteWeekEvent = useDeleteWeekEvent();
   const { data: trades } = useTrades(activeAccountId);
   const toast = useToast();
   const queryClient = useQueryClient();
@@ -57,6 +67,7 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
   const [pnl, setPnl] = useState(initial ? String(initial.pnl) : '');
   const [rating, setRating] = useState<number | null>(initial?.rating ?? null);
   const [news, setNews] = useState<string[]>(initial?.news ?? []);
+  const [weekEvents, setWeekEvents] = useState<string[]>(initial?.week_events ?? []);
   const [images, setImages] = useState<File[]>([]);
 
   const [direction, setDirection] = useState<Direction | null>(initial?.direction ?? null);
@@ -86,6 +97,7 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
       pnl: Number(pnl),
       rating,
       news,
+      week_events: weekEvents,
       direction,
       r_multiple: rMultiple.trim() === '' ? null : Number(rMultiple),
       setup: setup.trim() || null,
@@ -148,7 +160,7 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
       </div>
 
       <TagPicker
-        label="News des Tages"
+        label="News"
         mode="multi"
         options={newsTags ?? []}
         value={news}
@@ -160,6 +172,21 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
         }}
         onDelete={(id) => deleteNewsTag.mutate(id)}
         placeholder="z. B. CPI 14:30"
+      />
+
+      <TagPicker
+        label="Wochen-Events"
+        mode="multi"
+        options={weekEventTags ?? []}
+        value={weekEvents}
+        onChange={setWeekEvents}
+        onCreate={(name, color) => createWeekEvent.mutate({ name, color })}
+        onUpdate={(id, patch, prevName) => {
+          updateWeekEvent.mutate({ id, ...patch, prevName });
+          setWeekEvents((cur) => cur.map((n) => (n === prevName ? patch.name : n)));
+        }}
+        onDelete={(id) => deleteWeekEvent.mutate(id)}
+        placeholder="z. B. CPI-Week"
       />
 
       <ImageUploader value={images} onChange={setImages} />

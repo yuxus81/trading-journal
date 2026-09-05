@@ -35,7 +35,8 @@ create table trades (
   exec_time time,                                  -- execution time of day
   pnl numeric not null,                            -- typed manually
   rating smallint check (rating between 1 and 5),
-  news jsonb not null default '[]'::jsonb,         -- array of tag strings, e.g. ["CPI 14:30","FOMC week"]
+  news jsonb not null default '[]'::jsonb,         -- array of tag strings, e.g. ["CPI 14:30"]
+  week_events jsonb not null default '[]'::jsonb,  -- array of tag strings, e.g. ["CPI-Week","NFP-Week"]
   direction text check (direction in ('long','short')),  -- optional
   r_multiple numeric,                              -- typed manually, optional
   setup text,                                      -- tag, optional
@@ -61,8 +62,18 @@ create table setups (
   color text not null default 'gray'
 );
 
--- NEWS TAGS (reusable, colored tags for the trade's "news of the day" field)
+-- NEWS TAGS (reusable, colored tags for the trade's "news" field)
 create table news_tags (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
+  name text not null,
+  color text not null default 'gray',
+  created_at timestamptz not null default now(),
+  unique (user_id, name)
+);
+
+-- WEEK EVENTS (reusable, colored tags for recurring weekly context: CPI-Week, NFP-Week, …)
+create table week_events (
   id uuid primary key default gen_random_uuid(),
   user_id uuid not null default auth.uid() references auth.users(id) on delete cascade,
   name text not null,
@@ -78,6 +89,7 @@ alter table trades       enable row level security;
 alter table trade_images enable row level security;
 alter table setups       enable row level security;
 alter table news_tags    enable row level security;
+alter table week_events  enable row level security;
 
 -- RLS policies: only own rows
 create policy "own accounts"     on accounts     for all using (user_id = auth.uid()) with check (user_id = auth.uid());
@@ -86,10 +98,11 @@ create policy "own trades"       on trades       for all using (user_id = auth.u
 create policy "own trade_images" on trade_images for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "own setups"       on setups       for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 create policy "own news_tags"    on news_tags    for all using (user_id = auth.uid()) with check (user_id = auth.uid());
+create policy "own week_events"   on week_events   for all using (user_id = auth.uid()) with check (user_id = auth.uid());
 
 -- Grants for the Data API (required for projects created after 2026-05-30)
 grant usage on schema public to authenticated;
-grant all on accounts, cash_events, trades, trade_images, setups, news_tags to authenticated;
+grant all on accounts, cash_events, trades, trade_images, setups, news_tags, week_events to authenticated;
 
 -- Storage bucket for images (private)
 insert into storage.buckets (id, name, public) values ('trade-images','trade-images', false)

@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import { useTrade, useTradeImages, useDeleteTrade } from './useTrades';
 import { useSetups } from './useSetups';
 import { useNewsTags } from './useNewsTags';
+import { useWeekEvents } from './useWeekEvents';
 import { TradeImageGallery } from './TradeImageGallery';
 import { useAccounts } from '@/features/accounts/useAccounts';
 import { removeImages } from '@/api/storage';
@@ -42,6 +43,7 @@ export function TradeDetailPage() {
   const { data: accounts } = useAccounts();
   const { data: setups } = useSetups();
   const { data: newsTags } = useNewsTags();
+  const { data: weekEventTags } = useWeekEvents();
   const del = useDeleteTrade();
   const [confirm, setConfirm] = useState(false);
 
@@ -165,11 +167,22 @@ export function TradeDetailPage() {
             <Field label="Bewertung">
               {trade.rating ? <StarRating value={trade.rating} readOnly size="sm" /> : '—'}
             </Field>
-            <Field label="News des Tages">
+            <Field label="News">
               {trade.news.length > 0 ? (
                 <div className="flex flex-wrap gap-1">
                   {trade.news.map((n) => (
                     <Tag key={n} label={n} color={newsTags?.find((x) => x.name === n)?.color} />
+                  ))}
+                </div>
+              ) : (
+                '—'
+              )}
+            </Field>
+            <Field label="Wochen-Events">
+              {trade.week_events.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {trade.week_events.map((n) => (
+                    <Tag key={n} label={n} color={weekEventTags?.find((x) => x.name === n)?.color} />
                   ))}
                 </div>
               ) : (

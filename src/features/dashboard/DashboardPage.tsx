@@ -62,7 +62,7 @@ export function DashboardPage() {
         }
       />
 
-      {hasTrades && <TradeFilters assets={[]} setups={[]} newsTags={[]} compact />}
+      {hasTrades && <TradeFilters assets={[]} setups={[]} newsTags={[]} weekEventTags={[]} compact />}
 
       {!hasTrades ? (
         <EmptyState
