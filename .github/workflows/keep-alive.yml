@@ -1,19 +1,57 @@
-# OPTIONAL: prevents the Supabase Free-tier 7-day inactivity pause with a light
-# scheduled request. Safe to delete if you don't need it. Requires the same repo
-# secrets as the deploy workflow (VITE_SUPABASE_URL, VITE_SUPABASE_ANON_KEY).
-name: Supabase keep-alive
+name: Keep Supabase & Actions Alive
+
+# Supabases Free-Tier pausiert Projekte nach 7 Tagen ohne API-Traffic. Dieser
+# Job pingt die REST-API alle 5 Tage an (2 Tage Puffer). Damit der Scheduled
+# Workflow selbst nicht nach 60 Tagen ohne Repo-Aktivität von GitHub
+# stillgelegt wird, committet er bei jedem Lauf einen Zeitstempel auf einen
+# eigenen, isolierten Branch ("keepalive") — dort wird immer nur EIN Commit
+# per --amend überschrieben, damit main unangetastet bleibt und auch dieser
+# Branch nicht anwächst.
+#
+# URL + Publishable Key sind absichtlich hier fest eingetragen (nicht als
+# Secret): der Publishable/anon Key ist öffentlich und durch RLS geschützt,
+# genau wie im gebauten Frontend. Damit hat dieser Workflow keine
+# Secret-Abhängigkeit mehr und kann nicht mehr an fehlenden Secrets scheitern.
 
 on:
   schedule:
-    - cron: '0 6 */5 * *' # roughly every 5 days
+    - cron: '0 6 */5 * *'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
-  ping:
+  keepalive:
     runs-on: ubuntu-latest
     steps:
-      - name: Light REST request to keep the project active
+      - name: Ping Supabase REST API
         run: |
-          curl -sS -o /dev/null -w "keep-alive status: %{http_code}\n" \
-            "${{ secrets.VITE_SUPABASE_URL }}/rest/v1/accounts?select=id&limit=1" \
-            -H "apikey: ${{ secrets.VITE_SUPABASE_ANON_KEY }}"
+          curl -s -o /dev/null -w "Supabase-Ping: HTTP %{http_code}\n" \
+            "https://lecnftssyxttfpsyjwcr.supabase.co/rest/v1/accounts?select=id&limit=1" \
+            -H "apikey: sb_publishable_xafvEIwZjV2NfWjVPpNySw_LWW5GHTL" \
+            -H "Authorization: Bearer sb_publishable_xafvEIwZjV2NfWjVPpNySw_LWW5GHTL"
+
+      - uses: actions/checkout@v4
+
+      - name: Heartbeat-Commit auf isoliertem 'keepalive'-Branch (immer nur 1 Commit)
+        run: |
+          git config user.name "keepalive-bot"
+          git config user.email "actions@users.noreply.github.com"
+
+          git fetch origin keepalive:refs/remotes/origin/keepalive 2>/dev/null || true
+
+          if git show-ref --verify --quiet refs/remotes/origin/keepalive; then
+            git checkout -B keepalive origin/keepalive
+            echo "Letzter Ping: $(date -u '+%Y-%m-%d %H:%M UTC')" > HEARTBEAT.md
+            git add HEARTBEAT.md
+            git commit --amend -m "keepalive: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          else
+            git checkout --orphan keepalive
+            git rm -rf . > /dev/null 2>&1 || true
+            echo "Letzter Ping: $(date -u '+%Y-%m-%d %H:%M UTC')" > HEARTBEAT.md
+            git add HEARTBEAT.md
+            git commit -m "keepalive: $(date -u '+%Y-%m-%d %H:%M UTC')"
+          fi
+
+          git push origin keepalive --force
