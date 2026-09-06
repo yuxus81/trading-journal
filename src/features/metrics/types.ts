@@ -19,7 +19,7 @@ export interface RatingStat {
 export interface Metrics {
   tradeCount: number;
   netPnl: number;
-  winrate: number; // fraction 0..1; 0 when no trades
+  winrate: number; // wins / decided trades (breakeven excluded); 0..1, 0 when none decided
   avgWin: number; // 0 when no wins
   avgLoss: number; // negative; 0 when no losses
   profitFactor: number | null; // null when undefined (no losses or no trades)

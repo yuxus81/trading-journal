@@ -56,7 +56,8 @@ describe('computeMetrics', () => {
     const m = computeMetrics([t({ pnl: 100 }), t({ pnl: -50 }), t({ pnl: 200 }), t({ pnl: 0 })], acc);
     expect(m.tradeCount).toBe(4);
     expect(m.netPnl).toBe(250);
-    expect(m.winrate).toBeCloseTo(2 / 4);
+    // breakeven trade is not in the winrate denominator: 2 wins / 3 decided
+    expect(m.winrate).toBeCloseTo(2 / 3);
     expect(m.profitFactor).toBeCloseTo(300 / 50);
     expect(m.avgWin).toBeCloseTo(150);
     expect(m.avgLoss).toBeCloseTo(-50);

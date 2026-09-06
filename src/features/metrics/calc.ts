@@ -35,6 +35,9 @@ export function computeMetrics(trades: Trade[], account: Account): Metrics {
 
   const wins = pnls.filter((p) => p > 0);
   const losses = pnls.filter((p) => p < 0);
+  // Breakeven trades (pnl == 0, "no trade" entries) are excluded from the
+  // winrate denominator — it is wins / decided trades, not wins / all trades.
+  const decided = wins.length + losses.length;
 
   const netPnl = pnls.reduce((s, p) => s + p, 0);
   const grossProfit = wins.reduce((s, p) => s + p, 0);
@@ -112,7 +115,7 @@ export function computeMetrics(trades: Trade[], account: Account): Metrics {
   return {
     tradeCount: sorted.length,
     netPnl,
-    winrate: sorted.length > 0 ? wins.length / sorted.length : 0,
+    winrate: decided > 0 ? wins.length / decided : 0,
     avgWin,
     avgLoss,
     profitFactor: grossLoss > 0 ? grossProfit / grossLoss : null,
