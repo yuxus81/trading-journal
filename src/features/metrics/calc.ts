@@ -29,14 +29,21 @@ function mean(values: number[]): number {
   return values.reduce((s, v) => s + v, 0) / values.length;
 }
 
+/** Rows logged as "No Trade" are journal entries for days with no position — not trades. */
+export function isNoTrade(t: Trade): boolean {
+  return t.asset.trim().toLowerCase() === 'no trade';
+}
+
 export function computeMetrics(trades: Trade[], account: Account): Metrics {
-  const sorted = sortTrades(trades);
+  // "No Trade" rows are dropped from every metric — they are not trades, so they
+  // must not move the winrate, the count, the averages or the equity curve.
+  const sorted = sortTrades(trades.filter((t) => !isNoTrade(t)));
   const pnls = sorted.map((t) => t.pnl);
 
   const wins = pnls.filter((p) => p > 0);
   const losses = pnls.filter((p) => p < 0);
-  // Breakeven trades (pnl == 0, "no trade" entries) are excluded from the
-  // winrate denominator — it is wins / decided trades, not wins / all trades.
+  // Breakeven trades (pnl == 0) are also kept out of the winrate denominator:
+  // it is wins / decided trades, not wins / all trades.
   const decided = wins.length + losses.length;
 
   const netPnl = pnls.reduce((s, p) => s + p, 0);

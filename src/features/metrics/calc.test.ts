@@ -67,6 +67,22 @@ describe('computeMetrics', () => {
     expect(m.worst).toBe(-50);
   });
 
+  it('ignores "No Trade" rows in every metric', () => {
+    const m = computeMetrics(
+      [
+        t({ pnl: 100 }),
+        t({ pnl: -50 }),
+        t({ asset: 'No Trade', pnl: 0 }),
+        t({ asset: 'no trade', pnl: 0 }),
+      ],
+      acc,
+    );
+    expect(m.tradeCount).toBe(2);
+    expect(m.winrate).toBeCloseTo(1 / 2);
+    expect(m.netPnl).toBe(50);
+    expect(m.avgPnlPerTrade).toBeCloseTo(25);
+  });
+
   it('profit factor is null when there are no losses', () => {
     expect(computeMetrics([t({ pnl: 10 })], acc).profitFactor).toBeNull();
   });
