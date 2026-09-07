@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { useAuth } from '@/features/auth/useAuth';
 import { useUiStore } from '@/store/uiStore';
-import { useCreateTrade, useUpdateTrade, useTrades } from './useTrades';
+import { useCreateTrade, useUpdateTrade, useTrades, useTradeImages } from './useTrades';
+import { useSignedUrls } from './useSignedUrls';
 import { useCreateSetup, useDeleteSetup, useSetups, useUpdateSetup } from './useSetups';
 import { useCreateNewsTag, useDeleteNewsTag, useNewsTags, useUpdateNewsTag } from './useNewsTags';
 import {
@@ -12,8 +13,8 @@ import {
   useWeekEvents,
 } from './useWeekEvents';
 import { ImageUploader } from './ImageUploader';
-import { uploadImage } from '@/api/storage';
-import { addTradeImage } from '@/api/tradeImages';
+import { uploadImage, removeImages } from '@/api/storage';
+import { addTradeImage, deleteTradeImage } from '@/api/tradeImages';
 import {
   ArrowDownIcon,
   ArrowUpIcon,
@@ -70,6 +71,11 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
   const [weekEvents, setWeekEvents] = useState<string[]>(initial?.week_events ?? []);
   const [images, setImages] = useState<File[]>([]);
 
+  const { data: existingImages } = useTradeImages(initial?.id);
+  const [removedImageIds, setRemovedImageIds] = useState<string[]>([]);
+  const remainingImages = (existingImages ?? []).filter((img) => !removedImageIds.includes(img.id));
+  const existingUrls = useSignedUrls(remainingImages.map((i) => i.storage_path));
+
   const [direction, setDirection] = useState<Direction | null>(initial?.direction ?? null);
   const [rMultiple, setRMultiple] = useState(initial?.r_multiple != null ? String(initial.r_multiple) : '');
   const [setup, setSetup] = useState(initial?.setup ?? '');
@@ -113,6 +119,13 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
       } else {
         const created = await create.mutateAsync({ account_id: activeAccountId as string, ...fields } as NewTrade);
         tradeId = created.id;
+      }
+
+      if (removedImageIds.length > 0 && existingImages && tradeId) {
+        const toDelete = existingImages.filter((i) => removedImageIds.includes(i.id));
+        await removeImages(toDelete.map((i) => i.storage_path));
+        await Promise.all(toDelete.map((i) => deleteTradeImage(i.id)));
+        queryClient.invalidateQueries({ queryKey: ['tradeImages'] });
       }
 
       if (images.length > 0 && user && tradeId) {
@@ -188,6 +201,41 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
         onDelete={(id) => deleteWeekEvent.mutate(id)}
         placeholder="z. B. CPI-Week"
       />
+
+      {remainingImages.length > 0 && (
+        <div className="flex flex-col gap-2">
+          <span className="text-sm text-text-muted">Vorhandene Screenshots</span>
+          <div className="flex flex-wrap gap-2">
+            {remainingImages.map((img) => (
+              <div
+                key={img.id}
+                className="relative h-20 w-20 overflow-hidden rounded-md border border-border"
+              >
+                {existingUrls[img.storage_path] ? (
+                  <img
+                    src={existingUrls[img.storage_path]}
+                    alt="Screenshot"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  <div className="h-full w-full animate-pulse bg-border/40" />
+                )}
+                <button
+                  type="button"
+                  onClick={() => setRemovedImageIds((cur) => [...cur, img.id])}
+                  aria-label="Bild entfernen"
+                  className="absolute right-0.5 top-0.5 flex h-5 w-5 items-center justify-center rounded-full bg-black/70 text-xs text-white hover:bg-black"
+                >
+                  ✕
+                </button>
+              </div>
+            ))}
+          </div>
+          <p className="text-xs text-text-dim">
+            Entfernte Bilder werden erst beim Speichern endgültig gelöscht.
+          </p>
+        </div>
+      )}
 
       <ImageUploader value={images} onChange={setImages} />
 

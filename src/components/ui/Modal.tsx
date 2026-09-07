@@ -29,7 +29,7 @@ export function Modal({ open, onClose, title, children, size = 'max-w-lg' }: Mod
   if (!open) return null;
 
   return createPortal(
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4 sm:items-center">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-y-auto p-4">
       {/* The scrim blurs the page behind so the dialog reads as "in front of",
           not "pasted onto" — and makes clear the background is dismissible. */}
       <div
@@ -41,7 +41,7 @@ export function Modal({ open, onClose, title, children, size = 'max-w-lg' }: Mod
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className={`relative z-10 my-8 w-full ${size} animate-pop-in rounded-card border border-border-strong bg-card shadow-pop`}
+        className={`relative z-10 my-8 w-full sm:my-auto ${size} animate-pop-in rounded-card border border-border-strong bg-card shadow-pop`}
       >
         {title && (
           <div className="flex items-center justify-between border-b border-border px-5 py-4">
