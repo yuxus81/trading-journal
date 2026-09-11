@@ -185,6 +185,8 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
         }}
         onDelete={(id) => deleteNewsTag.mutate(id)}
         placeholder="z. B. CPI 14:30"
+        groupByTime
+        searchable
       />
 
       <TagPicker
