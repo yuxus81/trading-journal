@@ -117,19 +117,19 @@ export function TagPicker({
       const t = extractTime(o.name);
       if (t) timeCounts.set(t, (timeCounts.get(t) ?? 0) + 1);
     });
-    const unique = filtered
+    const shared = filtered
       .filter((o) => {
         const t = extractTime(o.name);
-        return t !== null && timeCounts.get(t) === 1;
+        return t !== null && timeCounts.get(t)! > 1;
       })
       .sort((a, b) => extractTime(a.name)!.localeCompare(extractTime(b.name)!));
     const rest = filtered
       .filter((o) => {
         const t = extractTime(o.name);
-        return t === null || timeCounts.get(t)! > 1;
+        return t === null || timeCounts.get(t) === 1;
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'de'));
-    return { primary: unique, others: rest };
+    return { primary: shared, others: rest };
   }, [filtered, groupByTime]);
 
   const othersHasSelected = others.some((o) => value.includes(o.name));
