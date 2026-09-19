@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Tag, TAG_COLOR_LIST, swatchClass, type TagColor } from './Tag';
 import { ConfirmDialog } from './ConfirmDialog';
+import { IMPACT_LABEL, NEWS_IMPACTS, joinNews, splitNews, type NewsImpact } from '@/lib/newsImpact';
 import { ChevronDownIcon, PencilIcon, SearchIcon, TrashIcon } from './icons';
 
 interface TagOption {
@@ -30,6 +31,8 @@ interface TagPickerProps {
   groupByTime?: boolean;
   /** Shows a small filter input above the tags once there are enough to search. */
   searchable?: boolean;
+  /** Each tag can be picked as a red or an orange folder: hovering fans out both choices. */
+  impactFolders?: boolean;
 }
 
 type Editor =
@@ -39,6 +42,15 @@ type Editor =
 function asTagColor(c: string): TagColor {
   return (TAG_COLOR_LIST as string[]).includes(c) ? (c as TagColor) : 'gray';
 }
+
+const FOLDER_ON: Record<NewsImpact, string> = {
+  red: 'bg-tag-red text-white',
+  orange: 'bg-tag-orange text-white',
+};
+const FOLDER_OFF: Record<NewsImpact, string> = {
+  red: 'bg-tag-red/15 text-tag-red hover:bg-tag-red/25',
+  orange: 'bg-tag-orange/15 text-tag-orange hover:bg-tag-orange/25',
+};
 
 const TIME_RE = /\b([01]?\d|2[0-3]):([0-5]\d)\b/;
 const NO_NEWS_RE = /no\s*news|keine\s*news/i;
@@ -61,6 +73,7 @@ export function TagPicker({
   placeholder,
   groupByTime,
   searchable,
+  impactFolders,
 }: TagPickerProps) {
   const [editor, setEditor] = useState<Editor | null>(null);
   const [draftName, setDraftName] = useState('');
@@ -68,6 +81,8 @@ export function TagPicker({
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
   const [search, setSearch] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
+  const [fanOpen, setFanOpen] = useState<string | null>(null);
+  const baseOf = (entry: string) => (impactFolders ? splitNews(entry).name : entry);
 
   const toggle = (name: string) => {
     if (mode === 'single') {
@@ -144,9 +159,80 @@ export function TagPicker({
     return { clusters: clusteredTags, noNews: noNewsTags, others: rest2 };
   }, [filtered, groupByTime]);
 
-  const othersHasSelected = others.some((o) => value.includes(o.name));
+  const othersHasSelected = others.some((o) => value.some((v) => baseOf(v) === o.name));
+
+  const toggleEntry = (entry: string) =>
+    onChange(value.includes(entry) ? value.filter((v) => v !== entry) : [...value, entry]);
+
+  const renderImpactTag = (o: TagOption) => {
+    const entries = value.filter((v) => splitNews(v).name === o.name);
+    const impacts = entries.map((e) => splitNews(e).impact);
+    const active = NEWS_IMPACTS.filter((i) => impacts.includes(i));
+    const hasPlain = impacts.includes(null);
+    const selected = entries.length > 0;
+    const open = fanOpen === o.name;
+    const canEdit = !!onUpdate && !!o.id;
+    const shownColor = active[0] ?? o.color;
+    return (
+      <span
+        key={o.id ?? o.name}
+        data-open={open}
+        onMouseLeave={() => setFanOpen((c) => (c === o.name ? null : c))}
+        className={`group relative inline-flex items-center rounded-md ${editingId === o.id ? 'ring-1 ring-brand' : ''}`}
+      >
+        <button
+          type="button"
+          onClick={() => {
+            if (hasPlain) onChange(value.filter((v) => v !== o.name));
+            setFanOpen(open ? null : o.name);
+          }}
+          className={`inline-flex items-center gap-1 rounded-md transition-opacity ${selected ? '' : 'opacity-50 hover:opacity-80'} ${canEdit ? 'pr-5' : ''}`}
+        >
+          <Tag label={o.name} color={shownColor} />
+          {active.length > 1 && (
+            <span className="absolute -right-1 -top-1 flex gap-px">
+              {active.map((i) => (
+                <span key={i} className={`h-1.5 w-1.5 rounded-full ${swatchClass(i)}`} />
+              ))}
+            </span>
+          )}
+        </button>
+        {canEdit && (
+          <button
+            type="button"
+            aria-label={`${o.name} bearbeiten`}
+            onClick={() => openEdit(o)}
+            className="absolute right-0.5 grid h-4 w-4 place-items-center rounded text-text-dim opacity-0 transition-opacity hover:text-text focus-visible:opacity-100 group-hover:opacity-100"
+          >
+            <PencilIcon width={11} height={11} />
+          </button>
+        )}
+        <span className="absolute left-0 top-full z-20 hidden pt-1 group-hover:block group-focus-within:block group-data-[open=true]:block">
+          <span className="flex gap-1.5 rounded-lg border border-border bg-bg p-1.5 shadow-lg">
+            {NEWS_IMPACTS.map((imp, idx) => {
+              const on = active.includes(imp);
+              return (
+                <button
+                  key={imp}
+                  type="button"
+                  aria-pressed={on}
+                  onClick={() => toggleEntry(joinNews(o.name, imp))}
+                  style={{ animationDelay: `${idx * 70}ms` }}
+                  className={`animate-folder-fan inline-flex items-center gap-1.5 whitespace-nowrap rounded-md px-2 py-1 text-xs font-medium transition-transform hover:-translate-y-0.5 active:scale-95 ${on ? FOLDER_ON[imp] : FOLDER_OFF[imp]}`}
+                >
+                  <span className={`h-2 w-2 rounded-full ${on ? 'bg-white' : swatchClass(imp)}`} />
+                  {IMPACT_LABEL[imp]}
+                </button>
+              );
+            })}
+          </span>
+        </span>
+      </span>
+    );
+  };
 
   const renderTag = (o: TagOption) => {
+    if (impactFolders) return renderImpactTag(o);
     const selected = value.includes(o.name);
     const canEdit = !!onUpdate && !!o.id;
     return (
@@ -321,8 +407,8 @@ export function TagPicker({
         onConfirm={() => {
           if (confirmDelete) {
             onDelete?.(confirmDelete.id, confirmDelete.name);
-            if (value.includes(confirmDelete.name)) {
-              onChange(value.filter((n) => n !== confirmDelete.name));
+            if (value.some((v) => baseOf(v) === confirmDelete.name)) {
+              onChange(value.filter((v) => baseOf(v) !== confirmDelete.name));
             }
           }
           setConfirmDelete(null);

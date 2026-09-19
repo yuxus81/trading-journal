@@ -5,6 +5,7 @@ import { useUiStore } from '@/store/uiStore';
 import { useCreateTrade, useUpdateTrade, useTrades, useTradeImages } from './useTrades';
 import { useSignedUrls } from './useSignedUrls';
 import { useCreateSetup, useDeleteSetup, useSetups, useUpdateSetup } from './useSetups';
+import { joinNews, splitNews } from '@/lib/newsImpact';
 import { useCreateNewsTag, useDeleteNewsTag, useNewsTags, useUpdateNewsTag } from './useNewsTags';
 import {
   useCreateWeekEvent,
@@ -184,10 +185,16 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
         onCreate={(name, color) => createNewsTag.mutate({ name, color })}
         onUpdate={(id, patch, prevName) => {
           updateNewsTag.mutate({ id, ...patch, prevName });
-          setNews((cur) => cur.map((n) => (n === prevName ? patch.name : n)));
+          setNews((cur) =>
+            cur.map((n) => {
+              const { name, impact } = splitNews(n);
+              return name === prevName ? joinNews(patch.name, impact) : n;
+            }),
+          );
         }}
         onDelete={(id) => deleteNewsTag.mutate(id)}
         placeholder="z. B. CPI 14:30"
+        impactFolders
         groupByTime
         searchable
       />

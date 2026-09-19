@@ -1,5 +1,6 @@
 import type { Trade } from '@/types/db';
 import type { TradeFilters } from '@/store/uiStore';
+import { splitNews } from '@/lib/newsImpact';
 
 /** Applies the shared trade filters (result, setup, asset, news, time-of-day). */
 export function filterTrades(trades: Trade[], f: TradeFilters): Trade[] {
@@ -8,7 +9,7 @@ export function filterTrades(trades: Trade[], f: TradeFilters): Trade[] {
     if (f.result === 'losses' && !(t.pnl < 0)) return false;
     if (f.setup && t.setup !== f.setup) return false;
     if (f.asset && t.asset !== f.asset) return false;
-    if (f.news.length > 0 && !f.news.some((n) => t.news.includes(n))) return false;
+    if (f.news.length > 0 && !t.news.some((e) => f.news.includes(splitNews(e).name))) return false;
     if (f.weekEvents.length > 0 && !f.weekEvents.some((n) => (t.week_events ?? []).includes(n)))
       return false;
     const time = t.exec_time?.slice(0, 5);

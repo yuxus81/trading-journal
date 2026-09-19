@@ -1,4 +1,5 @@
 import { supabase } from '@/lib/supabase';
+import { joinNews, splitNews } from '@/lib/newsImpact';
 import type { NewTrade, Trade, UpdateTrade } from '@/types/db';
 
 export async function listTrades(accountId: string): Promise<Trade[]> {
@@ -69,7 +70,20 @@ export async function renameSetupOnTrades(oldName: string, newName: string): Pro
 }
 
 export async function renameNewsOnTrades(oldName: string, newName: string): Promise<void> {
-  await renameJsonbTag('news', oldName, newName);
+  if (oldName === newName) return;
+  const affected = (await listAllTrades()).filter((t) => t.news.some((e) => splitNews(e).name === oldName));
+  for (const t of affected) {
+    const next = Array.from(
+      new Set(
+        t.news.map((e) => {
+          const { name, impact } = splitNews(e);
+          return name === oldName ? joinNews(newName, impact) : e;
+        }),
+      ),
+    );
+    const { error } = await supabase.from('trades').update({ news: next }).eq('id', t.id);
+    if (error) throw error;
+  }
 }
 
 export async function renameWeekEventOnTrades(oldName: string, newName: string): Promise<void> {

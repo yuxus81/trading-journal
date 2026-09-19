@@ -78,6 +78,11 @@ export default {
           '0%,100%': { opacity: '1', transform: 'scale(1)' },
           '50%': { opacity: '0.45', transform: 'scale(0.82)' },
         },
+        folderFan: {
+          '0%': { opacity: '0', transform: 'translateX(-14px) scale(0.6) rotate(-14deg)' },
+          '60%': { opacity: '1', transform: 'translateX(2px) scale(1.06) rotate(3deg)' },
+          '100%': { opacity: '1', transform: 'translateX(0) scale(1) rotate(0)' },
+        },
         shimmer: {
           from: { backgroundPosition: '-200% 0' },
           to: { backgroundPosition: '200% 0' },
@@ -90,6 +95,7 @@ export default {
         'rise-in': 'riseIn 0.42s cubic-bezier(0.22,1,0.36,1) both',
         'pop-in': 'popIn 0.16s cubic-bezier(0.22,1,0.36,1) both',
         'pulse-dot': 'pulseDot 2.4s ease-in-out infinite',
+        'folder-fan': 'folderFan 0.38s cubic-bezier(0.22,1,0.36,1) both',
         shimmer: 'shimmer 1.6s linear infinite',
       },
     },

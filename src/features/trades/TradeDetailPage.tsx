@@ -3,6 +3,7 @@ import { useNavigate, useParams, useLocation, Link } from 'react-router-dom';
 import { useTrade, useTradeImages, useDeleteTrade } from './useTrades';
 import { useSetups } from './useSetups';
 import { useNewsTags } from './useNewsTags';
+import { splitNews } from '@/lib/newsImpact';
 import { useWeekEvents } from './useWeekEvents';
 import { TradeImageGallery } from './TradeImageGallery';
 import { useAccounts } from '@/features/accounts/useAccounts';
@@ -171,9 +172,16 @@ export function TradeDetailPage() {
             <Field label="News">
               {trade.news.length > 0 ? (
                 <div className="flex flex-wrap gap-1">
-                  {trade.news.map((n) => (
-                    <Tag key={n} label={n} color={newsTags?.find((x) => x.name === n)?.color} />
-                  ))}
+                  {trade.news.map((n) => {
+                    const { name, impact } = splitNews(n);
+                    return (
+                      <Tag
+                        key={n}
+                        label={name}
+                        color={impact ?? newsTags?.find((x) => x.name === name)?.color}
+                      />
+                    );
+                  })}
                 </div>
               ) : (
                 '—'

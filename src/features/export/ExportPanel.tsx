@@ -4,6 +4,7 @@ import { toCsv, downloadCsv } from './csv';
 import { listAllTrades } from '@/api/trades';
 import { listAccounts } from '@/api/accounts';
 import type { Trade } from '@/types/db';
+import { newsLabel } from '@/lib/newsImpact';
 
 const TRADE_COLUMNS = [
   'id', 'account_id', 'asset', 'trade_date', 'exec_time', 'pnl', 'rating', 'direction',
@@ -37,7 +38,7 @@ export function ExportPanel({ open, onClose }: ExportPanelProps) {
         const rows = await listAllTrades();
         const flat = rows.map((t: Trade) => ({
           ...t,
-          news: t.news.join('; '),
+          news: t.news.map(newsLabel).join('; '),
           week_events: t.week_events.join('; '),
         }));
         downloadCsv(`trades-${stamp()}.csv`, toCsv(flat, TRADE_COLUMNS));
