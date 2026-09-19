@@ -41,6 +41,7 @@ function asTagColor(c: string): TagColor {
 }
 
 const TIME_RE = /\b([01]?\d|2[0-3]):([0-5]\d)\b/;
+const NO_NEWS_RE = /no\s*news|keine\s*news/i;
 
 function extractTime(name: string): string | null {
   const m = name.match(TIME_RE);
@@ -110,26 +111,37 @@ export function TagPicker({
     return q ? options.filter((o) => o.name.toLowerCase().includes(q)) : options;
   }, [options, search]);
 
-  const { primary, others } = useMemo(() => {
-    if (!groupByTime) return { primary: filtered, others: [] as TagOption[] };
+  const { clusters, noNews, others } = useMemo(() => {
+    if (!groupByTime) return { clusters: [] as { time: string; options: TagOption[] }[], noNews: [] as TagOption[], others: filtered };
+
+    const noNewsTags = filtered.filter((o) => NO_NEWS_RE.test(o.name)).sort((a, b) => a.name.localeCompare(b.name, 'de'));
+    const rest = filtered.filter((o) => !NO_NEWS_RE.test(o.name));
+
     const timeCounts = new Map<string, number>();
-    filtered.forEach((o) => {
+    rest.forEach((o) => {
       const t = extractTime(o.name);
       if (t) timeCounts.set(t, (timeCounts.get(t) ?? 0) + 1);
     });
-    const shared = filtered
-      .filter((o) => {
-        const t = extractTime(o.name);
-        return t !== null && timeCounts.get(t)! > 1;
-      })
-      .sort((a, b) => extractTime(a.name)!.localeCompare(extractTime(b.name)!));
-    const rest = filtered
+
+    const clusterTimes = [...timeCounts.entries()]
+      .filter(([, count]) => count > 1)
+      .map(([t]) => t)
+      .sort();
+    const clusteredTags = clusterTimes.map((time) => ({
+      time,
+      options: rest
+        .filter((o) => extractTime(o.name) === time)
+        .sort((a, b) => a.name.localeCompare(b.name, 'de')),
+    }));
+
+    const rest2 = rest
       .filter((o) => {
         const t = extractTime(o.name);
         return t === null || timeCounts.get(t) === 1;
       })
       .sort((a, b) => a.name.localeCompare(b.name, 'de'));
-    return { primary: shared, others: rest };
+
+    return { clusters: clusteredTags, noNews: noNewsTags, others: rest2 };
   }, [filtered, groupByTime]);
 
   const othersHasSelected = others.some((o) => value.includes(o.name));
@@ -188,35 +200,65 @@ export function TagPicker({
         </div>
       )}
 
-      <div className="flex flex-wrap items-center gap-1.5">
-        {primary.map(renderTag)}
-        {!editor && (
-          <button
-            type="button"
-            onClick={openCreate}
-            className="rounded-md border border-dashed border-border px-2 py-0.5 text-xs text-text-dim hover:border-border-strong hover:text-text-muted"
-          >
-            + Neu
-          </button>
-        )}
-      </div>
+      {!groupByTime && (
+        <div className="flex flex-wrap items-center gap-1.5">
+          {others.map(renderTag)}
+          {!editor && (
+            <button
+              type="button"
+              onClick={openCreate}
+              className="rounded-md border border-dashed border-border px-2 py-0.5 text-xs text-text-dim hover:border-border-strong hover:text-text-muted"
+            >
+              + Neu
+            </button>
+          )}
+        </div>
+      )}
 
-      {groupByTime && others.length > 0 && (
-        <div className="flex flex-col gap-1.5">
-          <button
-            type="button"
-            onClick={() => setOthersOpen((o) => !o)}
-            className="inline-flex w-fit items-center gap-1 text-xs text-text-dim hover:text-text-muted"
-          >
-            <ChevronDownIcon
-              width={11}
-              height={11}
-              className={`transition-transform ${othersOpen ? 'rotate-180' : ''}`}
-            />
-            Sonstiges ({others.length})
-            {othersHasSelected && !othersOpen && <span className="h-1.5 w-1.5 rounded-full bg-brand" />}
-          </button>
-          {othersOpen && <div className="flex flex-wrap items-center gap-1.5">{others.map(renderTag)}</div>}
+      {groupByTime && (
+        <div className="flex flex-col gap-2.5">
+          {clusters.map((c) => (
+            <div key={c.time} className="flex flex-col gap-1">
+              <span className="text-[11px] uppercase tracking-wide text-text-dim">{c.time} Uhr</span>
+              <div className="flex flex-wrap items-center gap-1.5">{c.options.map(renderTag)}</div>
+            </div>
+          ))}
+
+          {noNews.length > 0 && (
+            <div className="flex flex-col gap-1">
+              <span className="text-[11px] uppercase tracking-wide text-text-dim">Keine News-Tage</span>
+              <div className="flex flex-wrap items-center gap-1.5">{noNews.map(renderTag)}</div>
+            </div>
+          )}
+
+          {others.length > 0 && (
+            <div className="flex flex-col gap-1.5">
+              <button
+                type="button"
+                onClick={() => setOthersOpen((o) => !o)}
+                className="inline-flex w-fit items-center gap-1 text-xs text-text-dim hover:text-text-muted"
+              >
+                <ChevronDownIcon
+                  width={11}
+                  height={11}
+                  className={`transition-transform ${othersOpen ? 'rotate-180' : ''}`}
+                />
+                Sonstiges ({others.length})
+                {othersHasSelected && !othersOpen && <span className="h-1.5 w-1.5 rounded-full bg-brand" />}
+              </button>
+              {othersOpen && <div className="flex flex-wrap items-center gap-1.5">{others.map(renderTag)}</div>}
+            </div>
+          )}
+
+          {!editor && (
+            <button
+              type="button"
+              onClick={openCreate}
+              className="w-fit rounded-md border border-dashed border-border px-2 py-0.5 text-xs text-text-dim hover:border-border-strong hover:text-text-muted"
+            >
+              + Neu
+            </button>
+          )}
         </div>
       )}
 

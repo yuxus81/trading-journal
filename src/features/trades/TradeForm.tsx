@@ -19,6 +19,7 @@ import {
   ArrowDownIcon,
   ArrowUpIcon,
   Button,
+  CheckIcon,
   Combobox,
   Input,
   StarRating,
@@ -79,6 +80,7 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
   const [direction, setDirection] = useState<Direction | null>(initial?.direction ?? null);
   const [rMultiple, setRMultiple] = useState(initial?.r_multiple != null ? String(initial.r_multiple) : '');
   const [setup, setSetup] = useState(initial?.setup ?? '');
+  const [smt, setSmt] = useState(initial?.smt ?? false);
   const [confidence, setConfidence] = useState(initial?.confidence ?? 5);
   const [notes, setNotes] = useState(initial?.notes ?? '');
 
@@ -107,6 +109,7 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
       direction,
       r_multiple: rMultiple.trim() === '' ? null : Number(rMultiple),
       setup: setup.trim() || null,
+      smt,
       confidence,
       notes: notes.trim() || null,
     };
@@ -273,20 +276,41 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
 
       <div className="grid grid-cols-2 gap-4">
         <Input label="R-Multiple" type="number" inputMode="decimal" step="any" value={rMultiple} onChange={(e) => setRMultiple(e.target.value)} placeholder="z. B. 2.5" />
-        <TagPicker
-          label="Setup / Strategie"
-          mode="single"
-          options={setups ?? []}
-          value={setup ? [setup] : []}
-          onChange={(names) => setSetup(names[0] ?? '')}
-          onCreate={(name, color) => createSetup.mutate({ name, color })}
-          onUpdate={(id, patch, prevName) => {
-            updateSetup.mutate({ id, ...patch, prevName });
-            setSetup((cur) => (cur === prevName ? patch.name : cur));
-          }}
-          onDelete={(id) => deleteSetup.mutate(id)}
-          placeholder="z. B. Breakout"
-        />
+        <div className="flex flex-col gap-2">
+          <TagPicker
+            label="Setup / Strategie"
+            mode="single"
+            options={setups ?? []}
+            value={setup ? [setup] : []}
+            onChange={(names) => setSetup(names[0] ?? '')}
+            onCreate={(name, color) => createSetup.mutate({ name, color })}
+            onUpdate={(id, patch, prevName) => {
+              updateSetup.mutate({ id, ...patch, prevName });
+              setSetup((cur) => (cur === prevName ? patch.name : cur));
+            }}
+            onDelete={(id) => deleteSetup.mutate(id)}
+            placeholder="z. B. Breakout"
+          />
+          <button
+            type="button"
+            aria-pressed={smt}
+            onClick={() => setSmt((v) => !v)}
+            className={`inline-flex w-fit items-center gap-1.5 rounded-md border px-2.5 py-1 text-xs font-medium transition-colors ${
+              smt
+                ? 'border-brand/40 bg-brand/15 text-brand'
+                : 'border-border text-text-dim hover:border-border-strong hover:text-text-muted'
+            }`}
+          >
+            <span
+              className={`grid h-3.5 w-3.5 place-items-center rounded-[3px] border ${
+                smt ? 'border-brand bg-brand text-bg' : 'border-border-strong'
+              }`}
+            >
+              {smt && <CheckIcon width={9} height={9} />}
+            </span>
+            SMT
+          </button>
+        </div>
       </div>
 
       <Slider label="Confidence (1–10)" min={1} max={10} value={confidence} onChange={setConfidence} />

@@ -25,6 +25,7 @@ export interface Trade {
   direction: Direction | null;
   r_multiple: number | null;
   setup: string | null;
+  smt: boolean;
   confidence: number | null;
   notes: string | null;
   created_at: string;

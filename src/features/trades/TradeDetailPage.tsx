@@ -161,6 +161,7 @@ export function TradeDetailPage() {
                 '—'
               )}
             </Field>
+            <Field label="SMT">{trade.smt ? <Tag label="SMT" color="violet" /> : '—'}</Field>
             <Field label="Confidence">
               <span className="num">{trade.confidence != null ? `${trade.confidence}/10` : '—'}</span>
             </Field>
