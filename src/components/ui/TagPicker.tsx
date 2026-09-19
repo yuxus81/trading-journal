@@ -53,6 +53,8 @@ const FOLDER_OFF: Record<NewsImpact, string> = {
   orange: 'bg-tag-orange/15 text-tag-orange hover:bg-tag-orange/25',
 };
 
+const NEWS_COLORS: TagColor[] = ['gray', 'orange', 'red'];
+
 const TIME_RE = /\b([01]?\d|2[0-3]):([0-5]\d)\b/;
 const NO_NEWS_RE = /no\s*news|keine\s*news/i;
 
@@ -381,7 +383,7 @@ export function TagPicker({
             className="h-8 min-w-[8rem] flex-1 bg-transparent px-1 text-sm text-text placeholder:text-text-dim focus:outline-none"
           />
           <div className="flex items-center gap-1">
-            {TAG_COLOR_LIST.map((c) => (
+            {(impactFolders ? NEWS_COLORS : TAG_COLOR_LIST).map((c) => (
               <button
                 key={c}
                 type="button"
