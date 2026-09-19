@@ -28,3 +28,20 @@ export function newsLabel(entry: string): string {
   const { name, impact } = splitNews(entry);
   return impact ? `${name} (${IMPACT_LABEL[impact]})` : name;
 }
+
+/**
+ * Which folders a news tag offers is stored next to its color in the existing
+ * `color` column (`blue+red+orange`), so no DB migration is needed.
+ */
+export function tagBaseColor(color: string): string {
+  return color.split('+')[0] ?? color;
+}
+
+export function tagFolders(color: string): NewsImpact[] {
+  const parts = color.split('+').slice(1);
+  return NEWS_IMPACTS.filter((i) => parts.includes(i));
+}
+
+export function withFolders(base: string, folders: NewsImpact[]): string {
+  return folders.length ? `${base}+${NEWS_IMPACTS.filter((i) => folders.includes(i)).join('+')}` : base;
+}

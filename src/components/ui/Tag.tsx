@@ -44,7 +44,8 @@ const GRADIENT_CLASS: Record<TagColor, string> = {
 };
 
 function toColor(color?: string | null): TagColor {
-  return (TAG_COLOR_LIST as string[]).includes(color ?? '') ? (color as TagColor) : 'gray';
+  const base = (color ?? '').split('+')[0]!;
+  return (TAG_COLOR_LIST as string[]).includes(base) ? (base as TagColor) : 'gray';
 }
 
 export function tagPillClass(color?: string | null): string {

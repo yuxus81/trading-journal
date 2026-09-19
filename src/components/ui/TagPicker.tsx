@@ -1,7 +1,7 @@
 import { useMemo, useState } from 'react';
 import { Tag, TAG_COLOR_LIST, swatchClass, type TagColor } from './Tag';
 import { ConfirmDialog } from './ConfirmDialog';
-import { IMPACT_LABEL, NEWS_IMPACTS, joinNews, splitNews, type NewsImpact } from '@/lib/newsImpact';
+import { IMPACT_LABEL, NEWS_IMPACTS, joinNews, splitNews, tagBaseColor, tagFolders, withFolders, type NewsImpact } from '@/lib/newsImpact';
 import { ChevronDownIcon, PencilIcon, SearchIcon, TrashIcon } from './icons';
 
 interface TagOption {
@@ -40,7 +40,8 @@ type Editor =
   | { kind: 'edit'; id: string; prevName: string };
 
 function asTagColor(c: string): TagColor {
-  return (TAG_COLOR_LIST as string[]).includes(c) ? (c as TagColor) : 'gray';
+  const base = tagBaseColor(c);
+  return (TAG_COLOR_LIST as string[]).includes(base) ? (base as TagColor) : 'gray';
 }
 
 const FOLDER_ON: Record<NewsImpact, string> = {
@@ -81,6 +82,7 @@ export function TagPicker({
   const [confirmDelete, setConfirmDelete] = useState<{ id: string; name: string } | null>(null);
   const [search, setSearch] = useState('');
   const [othersOpen, setOthersOpen] = useState(false);
+  const [draftFolders, setDraftFolders] = useState<NewsImpact[]>([]);
   const [fanOpen, setFanOpen] = useState<string | null>(null);
   const baseOf = (entry: string) => (impactFolders ? splitNews(entry).name : entry);
 
@@ -95,6 +97,7 @@ export function TagPicker({
   const openCreate = () => {
     setDraftName('');
     setDraftColor('gray');
+    setDraftFolders([]);
     setEditor({ kind: 'create' });
   };
 
@@ -102,6 +105,7 @@ export function TagPicker({
     if (!o.id) return;
     setDraftName(o.name);
     setDraftColor(asTagColor(o.color));
+    setDraftFolders(tagFolders(o.color));
     setEditor({ kind: 'edit', id: o.id, prevName: o.name });
   };
 
@@ -110,10 +114,11 @@ export function TagPicker({
   const submit = () => {
     const name = draftName.trim();
     if (!name) return;
+    const color = impactFolders ? withFolders(draftColor, draftFolders) : draftColor;
     if (editor?.kind === 'edit') {
-      onUpdate?.(editor.id, { name, color: draftColor }, editor.prevName);
+      onUpdate?.(editor.id, { name, color }, editor.prevName);
     } else {
-      onCreate(name, draftColor);
+      onCreate(name, color);
       toggle(name);
     }
     close();
@@ -172,7 +177,9 @@ export function TagPicker({
     const selected = entries.length > 0;
     const open = fanOpen === o.name;
     const canEdit = !!onUpdate && !!o.id;
-    const shownColor = active[0] ?? o.color;
+    const folders = tagFolders(o.color);
+    const fanFolders = NEWS_IMPACTS.filter((i) => folders.includes(i) || active.includes(i));
+    const shownColor = active[0] ?? tagBaseColor(o.color);
     return (
       <span
         key={o.id ?? o.name}
@@ -183,16 +190,23 @@ export function TagPicker({
         <button
           type="button"
           onClick={() => {
+            if (fanFolders.length === 0) {
+              onChange(selected ? value.filter((v) => splitNews(v).name !== o.name) : [...value, o.name]);
+              return;
+            }
             if (hasPlain) onChange(value.filter((v) => v !== o.name));
             setFanOpen(open ? null : o.name);
           }}
           className={`inline-flex items-center gap-1 rounded-md transition-opacity ${selected ? '' : 'opacity-50 hover:opacity-80'} ${canEdit ? 'pr-5' : ''}`}
         >
           <Tag label={o.name} color={shownColor} />
-          {active.length > 1 && (
+          {fanFolders.length > 0 && (
             <span className="absolute -right-1 -top-1 flex gap-px">
-              {active.map((i) => (
-                <span key={i} className={`h-1.5 w-1.5 rounded-full ${swatchClass(i)}`} />
+              {fanFolders.map((i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 w-1.5 rounded-full ${swatchClass(i)} ${active.includes(i) ? '' : 'opacity-60'}`}
+                />
               ))}
             </span>
           )}
@@ -207,9 +221,10 @@ export function TagPicker({
             <PencilIcon width={11} height={11} />
           </button>
         )}
+        {fanFolders.length > 0 && (
         <span className="absolute left-0 top-full z-20 hidden pt-1 group-hover:block group-focus-within:block group-data-[open=true]:block">
           <span className="flex gap-1.5 rounded-lg border border-border bg-bg p-1.5 shadow-lg">
-            {NEWS_IMPACTS.map((imp, idx) => {
+            {fanFolders.map((imp, idx) => {
               const on = active.includes(imp);
               return (
                 <button
@@ -227,6 +242,7 @@ export function TagPicker({
             })}
           </span>
         </span>
+        )}
       </span>
     );
   };
@@ -375,6 +391,28 @@ export function TagPicker({
               />
             ))}
           </div>
+          {impactFolders && (
+            <div className="flex items-center gap-1">
+              {NEWS_IMPACTS.map((imp) => {
+                const on = draftFolders.includes(imp);
+                return (
+                  <button
+                    key={imp}
+                    type="button"
+                    aria-pressed={on}
+                    onClick={() =>
+                      setDraftFolders((cur) => (cur.includes(imp) ? cur.filter((f) => f !== imp) : [...cur, imp]))
+                    }
+                    className={`inline-flex items-center gap-1.5 rounded-md px-2 py-1 text-xs font-medium transition-colors ${on ? FOLDER_ON[imp] : 'border border-dashed border-border text-text-dim hover:text-text-muted'}`}
+                  >
+                    <span className={`h-2 w-2 rounded-full ${on ? 'bg-white' : swatchClass(imp)}`} />
+                    {on ? '' : '+ '}
+                    {IMPACT_LABEL[imp]}-Folder
+                  </button>
+                );
+              })}
+            </div>
+          )}
           {editor.kind === 'edit' && onDelete && (
             <button
               type="button"
