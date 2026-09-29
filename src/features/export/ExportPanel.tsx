@@ -8,7 +8,7 @@ import { newsLabel } from '@/lib/newsImpact';
 
 const TRADE_COLUMNS = [
   'id', 'account_id', 'asset', 'trade_date', 'exec_time', 'pnl', 'rating', 'direction',
-  'r_multiple', 'setup', 'confidence', 'news', 'week_events', 'notes', 'created_at',
+  'r_multiple', 'setups', 'confidence', 'news', 'week_events', 'notes', 'created_at',
 ];
 const ACCOUNT_COLUMNS = ['id', 'name', 'account_type', 'starting_capital', 'currency', 'created_at'];
 
@@ -40,6 +40,7 @@ export function ExportPanel({ open, onClose }: ExportPanelProps) {
           ...t,
           news: t.news.map(newsLabel).join('; '),
           week_events: t.week_events.join('; '),
+          setups: t.setups.join('; '),
         }));
         downloadCsv(`trades-${stamp()}.csv`, toCsv(flat, TRADE_COLUMNS));
       }

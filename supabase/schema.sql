@@ -39,7 +39,7 @@ create table trades (
   week_events jsonb not null default '[]'::jsonb,  -- array of tag strings, e.g. ["CPI-Week","NFP-Week"]
   direction text check (direction in ('long','short')),  -- optional
   r_multiple numeric,                              -- typed manually, optional
-  setup text,                                      -- tag, optional
+  setups jsonb not null default '[]'::jsonb,       -- array of setup tag strings, optional
   smt boolean not null default false,              -- SMT confluence present, independent of setup
   confidence smallint check (confidence between 1 and 10),  -- optional
   notes text,                                      -- psychology / mistake notes, optional

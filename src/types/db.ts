@@ -24,7 +24,7 @@ export interface Trade {
   week_events: string[];
   direction: Direction | null;
   r_multiple: number | null;
-  setup: string | null;
+  setups: string[];
   smt: boolean;
   confidence: number | null;
   notes: string | null;

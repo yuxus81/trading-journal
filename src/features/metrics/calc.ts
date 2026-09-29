@@ -94,14 +94,16 @@ export function computeMetrics(trades: Trade[], account: Account): Metrics {
     if (lossRun > longestLossStreak) longestLossStreak = lossRun;
   }
 
-  // Breakdown by setup (non-null), sorted by net pnl desc.
+  // Breakdown by setup, sorted by net pnl desc. A trade tagged with several
+  // setups counts fully toward each one (like the news/week-event tags).
   const setupMap = new Map<string, { netPnl: number; count: number }>();
   for (const t of sorted) {
-    if (!t.setup) continue;
-    const cur = setupMap.get(t.setup) ?? { netPnl: 0, count: 0 };
-    cur.netPnl += t.pnl;
-    cur.count += 1;
-    setupMap.set(t.setup, cur);
+    for (const s of t.setups) {
+      const cur = setupMap.get(s) ?? { netPnl: 0, count: 0 };
+      cur.netPnl += t.pnl;
+      cur.count += 1;
+      setupMap.set(s, cur);
+    }
   }
   const bySetup: SetupStat[] = [...setupMap.entries()]
     .map(([setup, v]) => ({ setup, netPnl: v.netPnl, count: v.count }))

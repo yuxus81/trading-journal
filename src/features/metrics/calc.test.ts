@@ -28,7 +28,7 @@ function t(p: Partial<Trade>): Trade {
     week_events: [],
     direction: null,
     r_multiple: null,
-    setup: null,
+    setups: [],
     smt: false,
     confidence: null,
     notes: null,
@@ -125,9 +125,9 @@ describe('computeMetrics', () => {
   it('groups by setup (sorted by net pnl desc) and by rating', () => {
     const m = computeMetrics(
       [
-        t({ pnl: 100, setup: 'Breakout', rating: 5 }),
-        t({ pnl: -20, setup: 'Reversal', rating: 2 }),
-        t({ pnl: 50, setup: 'Breakout', rating: 4 }),
+        t({ pnl: 100, setups: ['Breakout'], rating: 5 }),
+        t({ pnl: -20, setups: ['Reversal'], rating: 2 }),
+        t({ pnl: 50, setups: ['Breakout'], rating: 4 }),
       ],
       acc,
     );

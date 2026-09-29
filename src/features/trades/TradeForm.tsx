@@ -80,7 +80,7 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
 
   const [direction, setDirection] = useState<Direction | null>(initial?.direction ?? null);
   const [rMultiple, setRMultiple] = useState(initial?.r_multiple != null ? String(initial.r_multiple) : '');
-  const [setup, setSetup] = useState(initial?.setup ?? '');
+  const [selectedSetups, setSelectedSetups] = useState<string[]>(initial?.setups ?? []);
   const [smt, setSmt] = useState(initial?.smt ?? false);
   const [confidence, setConfidence] = useState(initial?.confidence ?? 5);
   const [notes, setNotes] = useState(initial?.notes ?? '');
@@ -109,7 +109,7 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
       week_events: weekEvents,
       direction,
       r_multiple: rMultiple.trim() === '' ? null : Number(rMultiple),
-      setup: setup.trim() || null,
+      setups: selectedSetups,
       smt,
       confidence,
       notes: notes.trim() || null,
@@ -286,14 +286,14 @@ export function TradeForm({ initial, onDone, onCancel }: TradeFormProps) {
         <div className="flex flex-col gap-2">
           <TagPicker
             label="Setup / Strategie"
-            mode="single"
+            mode="multi"
             options={setups ?? []}
-            value={setup ? [setup] : []}
-            onChange={(names) => setSetup(names[0] ?? '')}
+            value={selectedSetups}
+            onChange={setSelectedSetups}
             onCreate={(name, color) => createSetup.mutate({ name, color })}
             onUpdate={(id, patch, prevName) => {
               updateSetup.mutate({ id, ...patch, prevName });
-              setSetup((cur) => (cur === prevName ? patch.name : cur));
+              setSelectedSetups((cur) => cur.map((n) => (n === prevName ? patch.name : n)));
             }}
             onDelete={(id) => deleteSetup.mutate(id)}
             placeholder="z. B. Breakout"

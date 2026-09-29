@@ -32,8 +32,11 @@ export async function getTrade(id: string): Promise<Trade> {
 
 export async function createTrade(t: NewTrade): Promise<Trade> {
   let res = await supabase.from('trades').insert(t).select().single();
-  if (res.error && isMissingWeekEvents(res.error)) {
-    res = await supabase.from('trades').insert(stripWeekEvents(t)).select().single();
+  if (res.error && isMissingColumn(res.error, 'week_events')) {
+    res = await supabase.from('trades').insert(stripColumn(t, 'week_events')).select().single();
+  }
+  if (res.error && isMissingColumn(res.error, 'setups')) {
+    res = await supabase.from('trades').insert(stripColumn(t, 'setups')).select().single();
   }
   if (res.error) throw res.error;
   return normalizeTrade(res.data);
@@ -41,8 +44,11 @@ export async function createTrade(t: NewTrade): Promise<Trade> {
 
 export async function updateTrade(id: string, patch: UpdateTrade): Promise<Trade> {
   let res = await supabase.from('trades').update(patch).eq('id', id).select().single();
-  if (res.error && isMissingWeekEvents(res.error)) {
-    res = await supabase.from('trades').update(stripWeekEvents(patch)).eq('id', id).select().single();
+  if (res.error && isMissingColumn(res.error, 'week_events')) {
+    res = await supabase.from('trades').update(stripColumn(patch, 'week_events')).eq('id', id).select().single();
+  }
+  if (res.error && isMissingColumn(res.error, 'setups')) {
+    res = await supabase.from('trades').update(stripColumn(patch, 'setups')).eq('id', id).select().single();
   }
   if (res.error) throw res.error;
   return normalizeTrade(res.data);
@@ -64,9 +70,7 @@ export async function deleteTrade(id: string): Promise<void> {
  * rejects, so the match is done client-side rather than as a query.
  */
 export async function renameSetupOnTrades(oldName: string, newName: string): Promise<void> {
-  if (oldName === newName) return;
-  const { error } = await supabase.from('trades').update({ setup: newName }).eq('setup', oldName);
-  if (error) throw error;
+  await renameJsonbTag('setups', oldName, newName);
 }
 
 export async function renameNewsOnTrades(oldName: string, newName: string): Promise<void> {
@@ -91,7 +95,7 @@ export async function renameWeekEventOnTrades(oldName: string, newName: string):
 }
 
 async function renameJsonbTag(
-  column: 'news' | 'week_events',
+  column: 'news' | 'week_events' | 'setups',
   oldName: string,
   newName: string,
 ): Promise<void> {
@@ -107,16 +111,16 @@ async function renameJsonbTag(
 /** jsonb array columns can be missing (pre-migration) or null — always hand the app an array. */
 function normalizeTrade(row: unknown): Trade {
   const t = row as Trade;
-  return { ...t, news: t.news ?? [], week_events: t.week_events ?? [] };
+  return { ...t, news: t.news ?? [], week_events: t.week_events ?? [], setups: t.setups ?? [] };
 }
 
-function stripWeekEvents<T extends object>(payload: T): T {
+function stripColumn<T extends object>(payload: T, column: string): T {
   const clone = { ...(payload as Record<string, unknown>) };
-  delete clone.week_events;
+  delete clone[column];
   return clone as T;
 }
 
-function isMissingWeekEvents(err: { code?: string; message?: string }): boolean {
+function isMissingColumn(err: { code?: string; message?: string }, column: string): boolean {
   const msg = err.message ?? '';
-  return (err.code === 'PGRST204' || /week_events/i.test(msg)) && /column|schema cache/i.test(msg);
+  return (err.code === 'PGRST204' || new RegExp(column, 'i').test(msg)) && /column|schema cache/i.test(msg);
 }

@@ -156,8 +156,12 @@ export function TradeDetailPage() {
               <span className="num">{trade.r_multiple != null ? `${trade.r_multiple}R` : '—'}</span>
             </Field>
             <Field label="Setup">
-              {trade.setup ? (
-                <Tag label={trade.setup} color={setups?.find((s) => s.name === trade.setup)?.color} />
+              {trade.setups.length > 0 ? (
+                <div className="flex flex-wrap gap-1">
+                  {trade.setups.map((s) => (
+                    <Tag key={s} label={s} color={setups?.find((x) => x.name === s)?.color} />
+                  ))}
+                </div>
               ) : (
                 '—'
               )}

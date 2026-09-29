@@ -5,7 +5,7 @@ export type ResultFilter = 'all' | 'wins' | 'losses';
 
 export interface TradeFilters {
   result: ResultFilter;
-  setup: string | null;
+  setups: string[];
   asset: string | null;
   news: string[];
   weekEvents: string[];
@@ -15,7 +15,7 @@ export interface TradeFilters {
 
 const emptyFilters: TradeFilters = {
   result: 'all',
-  setup: null,
+  setups: [],
   asset: null,
   news: [],
   weekEvents: [],

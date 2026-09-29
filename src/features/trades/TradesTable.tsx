@@ -49,7 +49,7 @@ function value(t: Trade, key: SortKey): string | number {
     case 'direction':
       return t.direction ?? '';
     case 'setup':
-      return t.setup ?? '';
+      return t.setups.join(', ');
   }
 }
 
@@ -180,7 +180,15 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
                   {t.rating ? <StarRating value={t.rating} readOnly size="sm" /> : <span className="text-text-dim">—</span>}
                 </td>
                 <td className="px-4 py-2.5">
-                  {t.setup ? <Tag label={t.setup} color={setupColor(t.setup)} /> : <span className="text-text-dim">—</span>}
+                  {t.setups.length > 0 ? (
+                    <div className="flex flex-wrap gap-1">
+                      {t.setups.map((s) => (
+                        <Tag key={s} label={s} color={setupColor(s)} />
+                      ))}
+                    </div>
+                  ) : (
+                    <span className="text-text-dim">—</span>
+                  )}
                 </td>
                 <td className="px-2 py-2">
                   {thumbnails[t.id] ? (
@@ -221,7 +229,9 @@ export function TradesTable({ trades, currency }: TradesTableProps) {
                 <div className="num flex items-center gap-2 text-xs text-text-dim">
                   {formatDate(t.trade_date)}
                   {t.exec_time && <span>· {t.exec_time.slice(0, 5)}</span>}
-                  {t.setup && <Tag label={t.setup} color={setupColor(t.setup)} />}
+                  {t.setups.map((s) => (
+                    <Tag key={s} label={s} color={setupColor(s)} />
+                  ))}
                 </div>
               </div>
               <div className="flex shrink-0 flex-col items-end gap-1">

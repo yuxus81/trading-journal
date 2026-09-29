@@ -33,11 +33,19 @@ export function TradeFilters({
   const [open, setOpen] = useState(false);
 
   const activeCount =
-    (filters.setup ? 1 : 0) +
+    filters.setups.length +
     (filters.asset ? 1 : 0) +
     filters.news.length +
     filters.weekEvents.length +
     (filters.timeFrom || filters.timeTo ? 1 : 0);
+
+  const toggleSetup = (name: string) => {
+    setTradeFilters({
+      setups: filters.setups.includes(name)
+        ? filters.setups.filter((n) => n !== name)
+        : [...filters.setups, name],
+    });
+  };
 
   const toggleNews = (name: string) => {
     setTradeFilters({
@@ -96,11 +104,7 @@ export function TradeFilters({
           {setups.length > 0 && (
             <FilterRow title="Setup">
               {setups.map((s) => (
-                <FilterChip
-                  key={s.name}
-                  selected={filters.setup === s.name}
-                  onClick={() => setTradeFilters({ setup: filters.setup === s.name ? null : s.name })}
-                >
+                <FilterChip key={s.name} selected={filters.setups.includes(s.name)} onClick={() => toggleSetup(s.name)}>
                   <Tag label={s.name} color={s.color} />
                 </FilterChip>
               ))}

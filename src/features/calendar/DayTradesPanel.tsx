@@ -89,7 +89,9 @@ export function DayTradesPanel({ day, trades, currency, onClose }: DayTradesPane
                           {t.direction === 'long' ? 'Long' : 'Short'}
                         </span>
                       )}
-                      {t.setup && <Tag label={t.setup} color={setupColor(t.setup)} />}
+                      {t.setups.map((s) => (
+                        <Tag key={s} label={s} color={setupColor(s)} />
+                      ))}
                     </div>
                   </div>
                   <Money value={t.pnl} currency={currency} className="shrink-0 text-sm font-medium" />

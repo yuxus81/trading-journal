@@ -7,7 +7,7 @@ export function filterTrades(trades: Trade[], f: TradeFilters): Trade[] {
   return trades.filter((t) => {
     if (f.result === 'wins' && !(t.pnl > 0)) return false;
     if (f.result === 'losses' && !(t.pnl < 0)) return false;
-    if (f.setup && t.setup !== f.setup) return false;
+    if (f.setups.length > 0 && !f.setups.some((s) => t.setups.includes(s))) return false;
     if (f.asset && t.asset !== f.asset) return false;
     if (f.news.length > 0 && !t.news.some((e) => f.news.includes(splitNews(e).name))) return false;
     if (f.weekEvents.length > 0 && !f.weekEvents.some((n) => (t.week_events ?? []).includes(n)))
